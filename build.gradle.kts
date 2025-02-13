@@ -8,11 +8,12 @@ version = "0.0.1-SNAPSHOT"
 val mainClass = "com.ronreynolds.games.Main"
 
 // library versions
-val assertJVersion           = "3.24.2"
-val guavaVersion             = "33.2.1-jre"
-val jUnitJupiterVersion      = "5.10.2"  // from build/generated/api/build.gradle
-val lombokVersion            = "1.18.32"
-val slf4jVersion             = "1.7.25"
+val assertJVersion      = "3.24.2"
+val guavaVersion        = "33.2.1-jre"
+val jUnitJupiterVersion	= "5.10.2"  // from build/generated/api/build.gradle
+val lombokVersion       = "1.18.32"
+val picoCliVersion 		= "4.7.6"
+val slf4jVersion        = "1.7.25"
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_11
@@ -25,6 +26,7 @@ repositories {
 }
 
 dependencies {
+	implementation  ("info.picocli:picocli:$picoCliVersion")
 	implementation	("org.slf4j:slf4j-api:$slf4jVersion")
 	runtimeOnly		("org.slf4j:slf4j-simple:$slf4jVersion")
 
