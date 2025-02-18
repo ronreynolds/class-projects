@@ -1,10 +1,13 @@
 package com.ronreynolds.games.dungeon;
 
-import java.util.concurrent.ThreadLocalRandom;
+import com.ronreynolds.games.util.RandomUtil;
 
 public class Room {
-    private static final int REASONABLE_MAX_GOLD = 100;
-    private static final int REASONABLE_MAX_HEALTH = 50;
+    private static final int MIN_GOLD = 1;
+    private static final int MIN_HEALTH = 10;
+    // reasonable values?
+    private static final int MAX_GOLD = 100;
+    private static final int MAX_HEALTH = 50;
 
     private boolean visited;
     private final Monster monster;
@@ -12,13 +15,13 @@ public class Room {
     private final int health;
 
     public static Room generateRandomRoom() {
-        switch(ThreadLocalRandom.current().nextInt(0, 3)) {
+        switch(RandomUtil.randomIntBetween(0,3)) {
             case 0:
                 return new Room(Monster.generateRandomMonster(), 0, 0);
             case 1:
-                return new Room(null, ThreadLocalRandom.current().nextInt(1, REASONABLE_MAX_GOLD), 0);
+                return new Room(null, RandomUtil.randomIntBetween(MIN_GOLD, MAX_GOLD), 0);
             case 2:
-                return new Room(null, 0, ThreadLocalRandom.current().nextInt(1, REASONABLE_MAX_HEALTH));
+                return new Room(null, 0, RandomUtil.randomIntBetween(MIN_HEALTH, MAX_HEALTH));
             default:
                 throw new IllegalStateException("impossible random number not between 0...2");
         }

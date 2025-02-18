@@ -1,6 +1,6 @@
 package com.ronreynolds.games.dungeon;
 
-public class Main {
+public class Dungeon {
     private static final int DEFAULT_WIDTH = 10;
     private static final int DEFAULT_HEIGHT = 10;
 

@@ -1,5 +1,6 @@
 package com.ronreynolds.games;
 
+import com.ronreynolds.games.dungeon.Dungeon;
 import com.ronreynolds.games.hangman.Hangman;
 import picocli.CommandLine;
 
@@ -8,7 +9,8 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name="games", mixinStandardHelpOptions = true, version="1.0", description = "various games")
 public class Main implements Callable<Integer> {
     enum Game {
-        hangman(Hangman.class);
+        hangman(Hangman.class),
+        dungeon(Dungeon.class);
         final Class<?> handlerClass;
         Game(Class<?> handlerClass) {
             this.handlerClass = handlerClass;

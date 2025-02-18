@@ -1,7 +1,7 @@
 package com.ronreynolds.games.hangman;
 
 import com.ronreynolds.games.util.Console;
-import com.ronreynolds.games.util.RandomWord;
+import com.ronreynolds.games.util.RandomUtil;
 
 import java.util.HashSet;
 import java.util.Locale;
@@ -15,7 +15,7 @@ public class Hangman {
             while (true) {
                 GameDifficulty difficulty = getGameDifficulty();
                 GameRules gameRules = new GameRules(difficulty);
-                GameState gameState = new GameState(RandomWord.newWord());
+                GameState gameState = new GameState(RandomUtil.newWord());
                 GameResult result = GameResult.CONTINUE;
                 while (result == GameResult.CONTINUE) {
                     displayGameState(gameRules, gameState);

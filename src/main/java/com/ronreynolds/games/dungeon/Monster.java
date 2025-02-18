@@ -1,5 +1,7 @@
 package com.ronreynolds.games.dungeon;
 
+import com.ronreynolds.games.util.RandomUtil;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Monster {
@@ -9,7 +11,7 @@ public class Monster {
         goblin (6, 10),
         zombie (12, 15),
         orc (18, 20),
-        sizemogre (55, 5);
+        ogre (55, 5);
 
         final int maxDamage;
         final int maxHealth;
@@ -21,7 +23,7 @@ public class Monster {
     }
 
     public static Monster generateRandomMonster() {
-        switch(ThreadLocalRandom.current().nextInt(0, 4)) {
+        switch(RandomUtil.randomIntBetween(0,4)) {
             case 0:
                 return new Monster(MonsterType.goblin);
             case 1:
@@ -29,7 +31,7 @@ public class Monster {
             case 2:
                 return new Monster(MonsterType.orc);
             case 3:
-                return new Monster(MonsterType.sizemogre);
+                return new Monster(MonsterType.ogre);
             default:
                 throw new IllegalStateException("impossible random number outsize 0...3");
         }
@@ -50,7 +52,7 @@ public class Monster {
     }
 
     public void attack(Player target) {
-        int damage = ThreadLocalRandom.current().nextInt(MIN_DAMAGE, maxDamage);
+        int damage = RandomUtil.randomIntBetween(MIN_DAMAGE, maxDamage);
         target.onHit(damage);
     }
     public boolean isDead() {

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
-public class RandomWord {
+public class RandomUtil {
     // keep the word sizes reasonable
     private static final int minWordLength = 5;
     private static final int maxWordLength = 15;
@@ -21,13 +21,14 @@ public class RandomWord {
     private static final List<String> words = new ArrayList<>();
     private static int numWords;
 
+    // eager-loading words; might want to lazy-load these instead but...
     static {
         for (Path wordFile : WORD_FILES) {
             try {
                 Files.readAllLines(wordFile)
                         .stream()
                         .filter(word -> word.length() >= minWordLength && word.length() <= maxWordLength)
-                        .filter(RandomWord::onlyLetters)
+                        .filter(RandomUtil::onlyLetters)
                         .forEach(words::add);
                 numWords = words.size();
                 log.info("loaded {} words from {}", numWords, wordFile);
@@ -51,5 +52,9 @@ public class RandomWord {
      */
     public static String newWord() {
         return words.get(ThreadLocalRandom.current().nextInt(numWords));
+    }
+
+    public static int randomIntBetween(int lowerBoundInclusive, int upperBoundExclusive) {
+        return ThreadLocalRandom.current().nextInt(lowerBoundInclusive, upperBoundExclusive);
     }
 }
