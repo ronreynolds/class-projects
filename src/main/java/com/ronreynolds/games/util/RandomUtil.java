@@ -19,22 +19,37 @@ public class RandomUtil {
             Path.of("words.txt"),                   // when run from the command-line
     };
     private static final List<String> words = new ArrayList<>();
-    private static int numWords;
 
-    // eager-loading words; might want to lazy-load these instead but...
-    static {
-        for (Path wordFile : WORD_FILES) {
-            try {
-                Files.readAllLines(wordFile)
-                        .stream()
-                        .filter(word -> word.length() >= minWordLength && word.length() <= maxWordLength)
-                        .filter(RandomUtil::onlyLetters)
-                        .forEach(words::add);
-                numWords = words.size();
-                log.info("loaded {} words from {}", numWords, wordFile);
-                break;  // only read 1 file
-            } catch (IOException readFailure) {
-                log.info("failure to read file {}", wordFile, readFailure);
+    /**
+     * @return a random valid english word
+     */
+    public static String newWord() {
+        loadWords();
+        return words.get(randomPositiveIntLessThan(words.size()));
+    }
+
+    public static int randomPositiveIntLessThan(int upperBoundExclusive) {
+        return ThreadLocalRandom.current().nextInt(upperBoundExclusive);
+    }
+
+    public static int randomIntBetween(int lowerBoundInclusive, int upperBoundExclusive) {
+        return ThreadLocalRandom.current().nextInt(lowerBoundInclusive, upperBoundExclusive);
+    }
+
+    private static synchronized void loadWords() {
+        if (words.isEmpty()) {
+            for (Path wordFile : WORD_FILES) {
+                try {
+                    Files.readAllLines(wordFile)
+                            .stream()
+                            .filter(word -> word.length() >= minWordLength && word.length() <= maxWordLength)
+                            .filter(RandomUtil::onlyLetters)
+                            .forEach(words::add);
+                    log.info("loaded {} words from {}", words.size(), wordFile);
+                    break;  // only read 1 file
+                } catch (IOException readFailure) {
+                    log.info("failure to read file {}", wordFile, readFailure);
+                }
             }
         }
         // if we failed to load any words then we can't run the game :(
@@ -45,16 +60,5 @@ public class RandomUtil {
 
     private static boolean onlyLetters(String word) {
         return word.matches("[a-zA-Z]+");    // word ONLY contains letters (no digits, no spaces, no dashes, etc)
-    }
-
-    /**
-     * @return a random valid english word
-     */
-    public static String newWord() {
-        return words.get(ThreadLocalRandom.current().nextInt(numWords));
-    }
-
-    public static int randomIntBetween(int lowerBoundInclusive, int upperBoundExclusive) {
-        return ThreadLocalRandom.current().nextInt(lowerBoundInclusive, upperBoundExclusive);
     }
 }
