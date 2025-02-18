@@ -1,17 +1,14 @@
 package com.ronreynolds.games.hangman;
 
+import com.ronreynolds.games.util.Console;
 import com.ronreynolds.games.util.RandomWord;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
 public class Hangman {
     private static final boolean testingMode = true;
-    private static final BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
     public static void main(String[] args) {
         try {
@@ -25,19 +22,15 @@ public class Hangman {
                     GameMove move = getMove(gameState);
                     result = gameRules.playMove(gameState, move);
                 }
-                print("would you like to play again? (Y/n)");
-                String input = readLine().toLowerCase(Locale.ROOT);
+                Console.print("would you like to play again? (Y/n)");
+                String input = Console.readLine().toLowerCase(Locale.ROOT);
                 if (input.startsWith("n")) {
                     break;  // player said "no" (or something that started with n)  niet?  nine?  nope?
                 }
             }
-            print("good bye! :)");
+            Console.print("good bye! :)");
         } finally {
-            try {
-                // always close your streams when you're done with them
-                input.close();
-            } catch (IOException ignore) {
-            }
+            Console.close();
         }
     }
 
@@ -48,8 +41,8 @@ public class Hangman {
      */
     private static GameDifficulty getGameDifficulty() {
         while (true) {
-            print("Enter your difficulty: Easy(e), Intermediate(i), or Hard(h)");
-            String input = readLine().toLowerCase(Locale.ROOT);
+            Console.print("Enter your difficulty: Easy(e), Intermediate(i), or Hard(h)");
+            String input = Console.readLine().toLowerCase(Locale.ROOT);
             switch (input.charAt(0)) {
                 case 'e':
                     return GameDifficulty.EASY;
@@ -62,35 +55,12 @@ public class Hangman {
         }
     }
 
-    /**
-     * print something to screen
-     *
-     * @param format format string
-     * @param args   optional arguments for format string
-     */
-    private static void print(String format, Object... args) {
-        System.out.printf(format + "%n", args);
-    }
-
-    /**
-     * read a line of text from console
-     *
-     * @return the line read (could be empty; will NEVER be null)
-     * @throws RuntimeException if total fail to read from console
-     */
-    private static String readLine() {
-        try {
-            return input.readLine();
-        } catch (IOException fail) {
-            throw new RuntimeException(fail);
-        }
-    }
 
     private static void displayGameState(GameRules rules, GameState state) {
         if (testingMode) {
-            print("word:%s", state.answer);
+            Console.print("word:%s", state.answer);
         }
-        print("%d guesses left%nguess-word:%s%n", rules.difficulty.maxGuessCount - state.guessCount, state.guessSoFar);
+        Console.print("%d guesses left%nguess-word:%s%n", rules.difficulty.maxGuessCount - state.guessCount, state.guessSoFar);
     }
 
     /**
@@ -104,17 +74,17 @@ public class Hangman {
         Set<Integer> positions;
 
         while (true) {
-            print("next letter guess (or 'solve' if you're feeling lucky):");
-            String input = readLine();
+            Console.print("next letter guess (or 'solve' if you're feeling lucky):");
+            String input = Console.readLine();
             if (input.equalsIgnoreCase("solve")) {
-                print("guessed word:");
-                input = readLine();
+                Console.print("guessed word:");
+                input = Console.readLine();
                 return new GameMove(input);
             }
             // take the first letter; ignore all others
             guess = input.charAt(0);
             if (!Character.isLetter(guess)) {
-                print("%c is not a valid character", guess);
+                Console.print("%c is not a valid character", guess);
                 continue; // try again
             }
             break;
@@ -122,13 +92,13 @@ public class Hangman {
         while (true) {
             try {
                 final int maxPosition = gameState.answer.length() - 1;
-                print("guessed positions space-delimited (0...%d):", maxPosition);
-                String input = readLine();
+                Console.print("guessed positions space-delimited (0...%d):", maxPosition);
+                String input = Console.readLine();
                 positions = new HashSet<>();
                 for (String part : input.split(" ")) {
                     int position = Integer.parseInt(part);
                     if (position < 0 || position > maxPosition) {
-                        print("invalid position %d; try again", position);
+                        Console.print("invalid position %d; try again", position);
                         continue;
                     }
                     positions.add(position);
@@ -138,7 +108,7 @@ public class Hangman {
                 }
                 break;
             } catch (NumberFormatException notANumber) {
-                print("at least 1 position is not a number; try again");
+                Console.print("at least 1 position is not a number; try again");
             }
         }
 
@@ -237,7 +207,7 @@ public class Hangman {
 
         GameResult playMove(GameState state, GameMove move) {
             if (move.locations.size() > difficulty.maxLocCount) {
-                print("you aren't allowed to guess %d positions (only %d)", move.locations.size(), difficulty.maxLocCount);
+                Console.print("you aren't allowed to guess %d positions (only %d)", move.locations.size(), difficulty.maxLocCount);
                 return GameResult.CONTINUE;
             }
 
@@ -245,14 +215,14 @@ public class Hangman {
             boolean guessedWrong = applyMoveToState(move, state);
 
             if (state.answer.equals(state.guessSoFar)) {
-                print("YOU GOT IT! :)");
+                Console.print("YOU GOT IT! :)");
                 return GameResult.WIN;
             }
             if (guessedWrong) {
                 state.guessCount++;
             }
             if (state.guessCount >= difficulty.maxGuessCount) {
-                print("%d moves reached; sorry, no more guesses :(", difficulty.maxGuessCount);
+                Console.print("%d moves reached; sorry, no more guesses :(", difficulty.maxGuessCount);
                 return GameResult.LOSS;
             }
             return GameResult.CONTINUE;
@@ -282,13 +252,13 @@ public class Hangman {
                     if (state.answer.charAt(location) == move.letter) {
                         // replace the - at location with the guessed letter
                         state.guessSoFar = state.guessSoFar.substring(0, location) + move.letter + state.guessSoFar.substring(location + 1);
-                        print("there is a '%c' at %d!", move.letter, location);
+                        Console.print("there is a '%c' at %d!", move.letter, location);
                         atLeastOneRightGuess = true;
                     } else {
-                        print("there is not a '%c' at %d.", move.letter, location);
+                        Console.print("there is not a '%c' at %d.", move.letter, location);
                     }
                 } else {
-                    print("you already guessed the letter at %d", location);
+                    Console.print("you already guessed the letter at %d", location);
                 }
             }
             return !atLeastOneRightGuess;
