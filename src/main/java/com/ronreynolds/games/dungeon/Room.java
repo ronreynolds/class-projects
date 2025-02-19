@@ -3,37 +3,37 @@ package com.ronreynolds.games.dungeon;
 import com.ronreynolds.games.util.Console;
 import com.ronreynolds.games.util.RandomUtil;
 
+/**
+ * a room in a dungeon; tracks if it's been visited by player and what it contains (monster, gold, or health).
+ * if player took gold then room's gold will be 0; if player drank health room's health will be 0; if player killed
+ * room's monster then monster's health will be 0 (but it will still be in the room).
+ */
 public class Room {
-    private static final int MIN_GOLD = 1;
-    private static final int MIN_HEALTH = 10;
-    // reasonable values?
-    private static final int MAX_GOLD = 100;
-    private static final int MAX_HEALTH = 50;
-
     private boolean visited;
     private final Monster monster;
     private int gold;
     private int health;
 
+    // this might need some weighting towards more monsters...
     public static Room generateRandomRoom() {
         switch (RandomUtil.randomPositiveIntLessThan(3)) {
             case 0:
                 return new Room(Monster.generateRandomMonster(), 0, 0);
             case 1:
-                return new Room(null, RandomUtil.randomIntBetween(MIN_GOLD, MAX_GOLD), 0);
+                return new Room(null, RandomUtil.randomIntBetween(DungeonGame.MIN_GOLD, DungeonGame.MAX_GOLD), 0);
             case 2:
-                return new Room(null, 0, RandomUtil.randomIntBetween(MIN_HEALTH, MAX_HEALTH));
+                return new Room(null, 0, RandomUtil.randomIntBetween(DungeonGame.MIN_HEALTH, DungeonGame.MAX_HEALTH));
             default:
                 throw new IllegalStateException("impossible random number not between 0...2");
         }
     }
 
-    public static final Room EMPTY_ROOM = new Room(null, 0, 0);
-
-    static {
-        EMPTY_ROOM.wasVisited();
+    // starting-room is always empty (because of game flow in DungeonGame)
+    public static Room emptyRoom() {
+        return new Room(null, 0, 0);
     }
 
+    // force others to use factory methods to create either random or empty rooms
     private Room(Monster monster, int gold, int health) {
         this.monster = monster;
         this.gold = gold;
@@ -64,7 +64,6 @@ public class Room {
         return gold > 0 || health > 0;
     }
 
-
     public boolean isVisited() {
         return visited;
     }
@@ -73,7 +72,12 @@ public class Room {
         visited = true;
     }
 
+    // print the contents of the room
     public void print() {
+        if (visited) {
+            Console.print("it looks like you've been here before");
+        }
+
         String contents;
         if (monster != null) {
             contents = "a monster";
@@ -85,11 +89,9 @@ public class Room {
             contents = "nothing";
         }
         Console.print("the room contains %s!", contents);
-        if (visited) {
-            Console.print("it looks like you've been here before");
-        }
     }
 
+    // this method allows us to display contents for testing if enabled; otherwise it'll be a space
     public char getCharForContents() {
         char c = ' ';   // for non-test mode or just empty
         if (DungeonGame.testMode) {

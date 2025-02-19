@@ -2,6 +2,12 @@ package com.ronreynolds.games.dungeon;
 
 import com.ronreynolds.games.util.Console;
 
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Player {
     public enum PlayerClass {
         Warrior(100, 1.0, 15),
@@ -38,6 +44,7 @@ public class Player {
     private int maxDamage;
     private PlayerClass playerClass;
     private double lootMultiplier;
+    private final Map<Monster.MonsterType, AtomicInteger> killMap = new EnumMap<>(Monster.MonsterType.class);
 
     /**
      * create Player of the specified class
@@ -102,6 +109,14 @@ public class Player {
 
     public int getHealth() {
         return health;
+    }
+
+    public Map<Monster.MonsterType,AtomicInteger> getKillMap() {
+        return this.killMap;
+    }
+
+    public void killedA(Monster.MonsterType type) {
+        this.killMap.computeIfAbsent(type, ignore -> new AtomicInteger()).incrementAndGet();
     }
 
     public void print() {

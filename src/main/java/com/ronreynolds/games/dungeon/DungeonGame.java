@@ -3,6 +3,12 @@ package com.ronreynolds.games.dungeon;
 import com.ronreynolds.games.util.Console;
 
 public class DungeonGame {
+    public static final int MIN_GOLD = 1;
+    public static final int MIN_HEALTH = 10;
+    // reasonable values?
+    public static final int MAX_GOLD = 20;
+    public static final int MAX_HEALTH = 25;
+
     public static final int WINNING_GOLD = 100;
     public static boolean testMode = false;
 
@@ -109,6 +115,7 @@ public class DungeonGame {
                         Console.print("you hit the %s for %d damage", monster.getType(), damage);
                         if (monster.isDead()) {
                             Console.print("it's dead, Jim!!");
+                            player.killedA(monster.getType());
                         } else {
                             Console.print("the %s looks really mad now", monster.getType());
                         }

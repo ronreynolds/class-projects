@@ -6,6 +6,7 @@ public class Dungeon {
     private static final int DEFAULT_WIDTH = 10;
     private static final int DEFAULT_HEIGHT = 10;
 
+    /** main entry-point into Dungeon game */
     public static void main(String[] args) {
         int width = DEFAULT_WIDTH;
         int height = DEFAULT_HEIGHT;
@@ -27,6 +28,7 @@ public class Dungeon {
         DungeonMap map = DungeonMap.generateRandomDungeonMap(height, width, 0, 0);
         DungeonGame game = new DungeonGame(map, player);
         game.play();
-        Console.print("the end.");
+        Console.print("the end.  you gathered %d gold, killed %s, and %s", player.getGold(), player.getKillMap(),
+                player.isDead() ? "died. :(" : "didn't die! :)");
     }
 }

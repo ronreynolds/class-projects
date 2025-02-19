@@ -7,6 +7,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class DungeonMap {
+    // characters used to indicate the current player position and the rooms they have visited already
+    private static final char PLAYER_CHAR = 'X';
+    private static final char VISITED_CHAR = '*';
+
     private final Room[][] rooms;
     private final String topAndBottomLine;
     private final int rows;
@@ -44,21 +48,23 @@ public class DungeonMap {
                 rooms[row][col] = Room.generateRandomRoom();
             }
         }
-        // the starting room is ALWAYS empty
-        rooms[startRow][startCol] = Room.EMPTY_ROOM;
 
-        return new DungeonMap(rooms, columns, rows);
+        // the starting room is ALWAYS empty (because of how game flow works in DungeonGame)
+        rooms[startRow][startCol] = Room.emptyRoom();
+        rooms[startRow][startCol].wasVisited();
+
+        return new DungeonMap(rooms, rows, columns);
     }
 
     /**
      * wrap a DungeonMap around a double-array of rooms; width and height are provided so we don't have to extract them
      * from the rooms array every time.
      */
-    private DungeonMap(Room[][] rooms, int columns, int rows) {
+    private DungeonMap(Room[][] rooms, int rows, int columns) {
         this.rooms = rooms;
         this.rows = rows;
         this.columns = columns;
-        // used when printing the dungeon; used to demarcate the very top and bottom of the dungeon; we cache it for perf
+        // when printing the dungeon used to demarcate the very top and bottom of the dungeon; we cache it for perf
         this.topAndBottomLine = String.format("+%s+", "-".repeat(this.columns));
     }
 
@@ -73,10 +79,10 @@ public class DungeonMap {
             for (int col = 0; col < columns; ++col) {
                 Room room = getRoom(row, col);
                 if (row == currentRoomRow && col == currentRoomCol) {
-                    System.out.print('X');
+                    System.out.print(PLAYER_CHAR);
                 } else {
                     if (room.isVisited()) {
-                        System.out.print('*');
+                        System.out.print(VISITED_CHAR);
                     } else {
                         System.out.print(room.getCharForContents());
                     }
