@@ -39,7 +39,7 @@ dependencies {
 	// test dependencies
 	testImplementation	("org.assertj:assertj-core:$assertJVersion")
 	testImplementation	("org.junit.jupiter:junit-jupiter:$jUnitJupiterVersion")
-	testRuntimeOnly		("org.junit.platform:junit-platform-launcher")
+	testRuntimeOnly		("org.junit.platform:junit-platform-launcher:1.11.4")	// 2025-02-21
 }
 
 tasks.compileJava {
