@@ -3,14 +3,12 @@ package com.ronreynolds.games.sudoku;
 
 import org.junit.jupiter.api.Test;
 
-import javax.swing.*;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GameStateTest {
     @Test
     void validateStateGridsAndRows() {
-        GameState state = GameState.createState(new int[][]{
+        SudokuPuzzle state = SudokuPuzzle.create(new int[][]{
                 {1, 2, 3, 4, 5, 6, 7, 8, 9},
                 {4, 5, 6, 7, 8, 9, 1, 2, 3},
                 {7, 8, 9, 1, 2, 3, 4, 5, 6},

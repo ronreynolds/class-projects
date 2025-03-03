@@ -10,8 +10,8 @@ public class CellCoordinates implements Comparable<CellCoordinates> {
     public final int col;   // 0-based
 
     public CellCoordinates(int row, int col) {
-        this.row = GameState.validateRowOrColumn(row, "row");
-        this.col = GameState.validateRowOrColumn(col, "column");
+        this.row = SudokuPuzzle.validateRowOrColumn(row, "row");
+        this.col = SudokuPuzzle.validateRowOrColumn(col, "column");
     }
 
     @Override
