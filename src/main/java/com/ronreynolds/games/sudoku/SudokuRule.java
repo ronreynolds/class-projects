@@ -7,7 +7,7 @@ public enum SudokuRule {
     ONE_VALUE_PER_ROW {
         @Override
         public boolean isValid(SudokuPuzzle puzzle) {
-            for (Cell[] row : puzzle.getRows()) {
+            for (CellGroup row : puzzle.getRows()) {
                 if (hasDuplicateValues(row)) {
                     return false;
                 }
@@ -18,8 +18,7 @@ public enum SudokuRule {
     ONE_VALUE_PER_COLUMN {
         @Override
         public boolean isValid(SudokuPuzzle puzzle) {
-            for (int x = 0; x < Sudoku.dimension; ++x) {
-                Cell[] row = puzzle.getCol(x);
+            for (CellGroup row : puzzle.getColumns()) {
                 if (hasDuplicateValues(row)) {
                     return false;
                 }
@@ -30,10 +29,11 @@ public enum SudokuRule {
     ONE_VALUE_PER_BLOCK {
         @Override
         public boolean isValid(SudokuPuzzle puzzle) {
-            for (int x = 0; x < Sudoku.dimension; ++x) {
-                Cell[] row = puzzle.getBlockForCell(x);
-                if (hasDuplicateValues(row)) {
-                    return false;
+            for (CellGroup[] blockGroup : puzzle.getBlocks()) {
+                for (CellGroup block : blockGroup) {
+                    if (hasDuplicateValues(block)) {
+                        return false;
+                    }
                 }
             }
             return true;
@@ -50,8 +50,8 @@ public enum SudokuRule {
     public abstract boolean isValid(SudokuPuzzle sudokuPuzzle);
 
     /** common method to detect if a group of cells has a single value more than once */
-    private static boolean hasDuplicateValues(Cell[] cells) {
-        Set<Integer> values = newValuesSet();
+    private static boolean hasDuplicateValues(CellGroup cells) {
+        Set<Integer> values = newAllValuesSet();
         for (Cell cell : cells) {
             if (cell.hasValue()) {
                 Integer value = cell.getValue();
@@ -66,7 +66,8 @@ public enum SudokuRule {
         return false;
     }
 
-    private static Set<Integer> newValuesSet() {
+    // return a set of all possible values in a puzzle of the Sudoku.dimension size
+    private static Set<Integer> newAllValuesSet() {
         Set<Integer> values = new HashSet<>();
         for (int val = 1; val <= Sudoku.dimension; ++val) {
             values.add(val);
