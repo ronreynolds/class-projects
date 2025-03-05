@@ -51,7 +51,7 @@ public enum SudokuRule {
 
     /** common method to detect if a group of cells has a single value more than once */
     private static boolean hasDuplicateValues(CellGroup cells) {
-        Set<Integer> values = newAllValuesSet();
+        Set<Integer> values = Sudoku.newAllValuesSet();
         for (Cell cell : cells) {
             if (cell.hasValue()) {
                 Integer value = cell.getValue();
@@ -64,14 +64,5 @@ public enum SudokuRule {
             }
         }
         return false;
-    }
-
-    // return a set of all possible values in a puzzle of the Sudoku.dimension size
-    private static Set<Integer> newAllValuesSet() {
-        Set<Integer> values = new HashSet<>();
-        for (int val = 1; val <= Sudoku.dimension; ++val) {
-            values.add(val);
-        }
-        return values;
     }
 }

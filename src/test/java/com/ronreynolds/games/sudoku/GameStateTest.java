@@ -24,20 +24,15 @@ class GameStateTest {
 
         for (int row = 0; row < 9; ++row) {
             for (int col = 0; col < 9; ++col) {
-                Cell cell = state.getCell(row, col);
-                CellCoordinates coords = cell.getCoordinates();
-                assertThat(coords.row).isEqualTo(row);
-                assertThat(coords.col).isEqualTo(col);
+                CellCoordinates coordinates = CellCoordinates.of(row, col);
+                Cell cell = state.getCell(coordinates);
+                assertThat(cell.getCoordinates().row).isEqualTo(row);
+                assertThat(cell.getCoordinates().col).isEqualTo(col);
             }
         }
 
-        Cell[][] block = state.getBlockForCell(new CellCoordinates(1, 2));  // should be the {678},{912},{345} block
-        assertThat(block[0][0]).isSameAs(state.getCell(3, 6));
-        assertThat(block[2][2]).isSameAs(state.getCell(5, 8));
-
-        Cell[] column = state.getCol(4);
-        for (int row = 0; row < column.length; ++row) {
-            assertThat(column[row]).isSameAs(state.getCell(row, 4));
-        }
+        CellGroup block = state.getBlockForCell(CellCoordinates.of(1, 2));  // should be the {678},{912},{345} block
+        assertThat(block.getCell(0)).isSameAs(state.getCell(CellCoordinates.of(3, 6)));
+        assertThat(block.getCell(9)).isSameAs(state.getCell(CellCoordinates.of(5, 8)));
     }
 }

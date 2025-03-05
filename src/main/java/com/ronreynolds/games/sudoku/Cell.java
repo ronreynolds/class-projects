@@ -12,11 +12,11 @@ import java.util.Set;
 @Getter
 public class Cell {
     private final CellCoordinates coordinates;
-    private final Set<Integer> possibleValues = new HashSet<>();
+    private final Set<Integer> possibleValues = Sudoku.newAllValuesSet();
     private Integer value;
 
     Cell(int row, int col) {
-        this(new CellCoordinates(row, col));
+        this(CellCoordinates.of(row, col));
     }
 
     Cell(@NonNull CellCoordinates coordinates) {

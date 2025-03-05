@@ -1,6 +1,5 @@
 package com.ronreynolds.games.sudoku;
 
-import com.ronreynolds.games.util.Strings;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -86,7 +85,8 @@ public class SudokuPuzzle {
                         throw new IllegalArgumentException(
                                 String.format("invalid value (%c) at (%d, %d)", value, row, col));
                     }
-                    puzzle.getCell(row, col).setValue(value - '0'); // simple way to convert a digit char to int
+                    int intValue = value - '0'; // simple way to convert a digit char to int
+                    puzzle.setCellValue(CellCoordinates.of(row, col), intValue);
                 }
             }
         }
@@ -114,7 +114,7 @@ public class SudokuPuzzle {
                         throw new IllegalArgumentException(
                                 String.format("invalid value (%c) at (%d, %d)", value, row, col));
                     }
-                    puzzle.getCell(row, col).setValue(value);
+                    puzzle.setCellValue(CellCoordinates.of(row, col), value);
                 }
             }
         }
@@ -122,13 +122,14 @@ public class SudokuPuzzle {
     }
 
     /**
-     * if the value isn't between 1 and the max dimension (inclusive) throw an IllegalArgumentException
+     * this method, when it sets the value of a cell, also removes that value from the possible values of that cell's
+     * row, column, and block
      */
-    public static int validateRowOrColumn(int value, String field) {
-        if (value < 0 || value >= dimension) {
-            throw new IllegalArgumentException(field + " must be between 0 and " + dimension + "  exclusive");
-        }
-        return value;
+    public void setCellValue(CellCoordinates coordinates, int value) {
+        getCell(coordinates).setValue(value);
+        getRowForCell(coordinates).forEach(c -> c.removePossibleValue(value));
+        getColumnForCell(coordinates).forEach(c -> c.removePossibleValue(value));
+        getBlockForCell(coordinates).forEach(c -> c.removePossibleValue(value));
     }
 
     /**
@@ -143,16 +144,29 @@ public class SudokuPuzzle {
         return blocks[blockRow][blockCol];
     }
 
-    public Cell getCell(int row, int col) {
-        return getRow(row).getCell(col);
+    /**
+     * if we use CellCoordinates instead of row/column ints we don't have to worry about validating the values
+     */
+    public Cell getCell(CellCoordinates coordinates) {
+        return getRowForCell(coordinates).getCell(coordinates.col);
     }
 
-    public CellGroup getRow(int row) {
-        return rows[validateRowOrColumn(row, "row")];
+    public CellGroup getRowForCell(CellCoordinates coordinates) {
+        return rows[coordinates.row];
     }
 
-    public CellGroup getColumn(int col) {
-        return columns[validateRowOrColumn(col, "col")];
+    public CellGroup getColumnForCell(CellCoordinates coordinates) {
+        return columns[coordinates.col];
+    }
+
+    public List<Cell> getCellList() {
+        List<Cell> cellList = new ArrayList<>(dimension * dimension);
+        for (CellGroup row : getRows()) {
+            for (Cell cell : row) {
+                cellList.add(cell);
+            }
+        }
+        return cellList;
     }
 
     @Override
@@ -178,6 +192,17 @@ public class SudokuPuzzle {
         return true;
     }
 
+    public boolean isSolved() {
+        for (CellGroup row : getRows()) {
+            for (Cell cell : row) {
+                if (!cell.hasValue()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     // only called for rule analysis (so rarely); otherwise would try to optimize this for perf
     public CellGroup[] getRows() {
         return rows;
@@ -190,4 +215,5 @@ public class SudokuPuzzle {
     public CellGroup[][] getBlocks() {
         return blocks;
     }
+
 }
