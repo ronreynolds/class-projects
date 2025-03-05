@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.ronreynolds.games.sudoku.Sudoku.blockSize;
@@ -17,6 +18,7 @@ public class SudokuPuzzle {
     private final CellGroup[] rows = new CellGroup[dimension];                  // 9 groups for the 9 rows
     private final CellGroup[] columns = new CellGroup[dimension];               // 9 groups for the 9 columns
     private final CellGroup[][] blocks = new CellGroup[blockSize][blockSize];   // 3x3 grid of groups
+    private final List<CellGroup> groupList;
 
     /**
      * create a grid of dimension x dimension cells and an array of blocks of sqrt(dimension) x sqrt(dimension)
@@ -62,6 +64,13 @@ public class SudokuPuzzle {
                             blockRow, blockCol));
                 }
             }
+        }
+        // used by solvers that need to iterate all the groups regardless of what kind they are
+        groupList = new ArrayList<>(rows.length + columns.length + blocks.length * 2);
+        Collections.addAll(groupList, rows);
+        Collections.addAll(groupList, columns);
+        for (CellGroup[] blockRow : blocks) {
+            Collections.addAll(groupList, blockRow);
         }
     }
 
@@ -119,6 +128,26 @@ public class SudokuPuzzle {
             }
         }
         return puzzle;
+    }
+
+
+    public CellGroup[] getRows() {
+        return rows;
+    }
+
+    public CellGroup[] getColumns() {
+        return columns;
+    }
+
+    public CellGroup[][] getBlocks() {
+        return blocks;
+    }
+
+    /**
+     * convenience method for solvers that walk all rows, columns, and blocks
+     */
+    public List<CellGroup> getCellGroupList() {
+        return Collections.unmodifiableList(groupList);
     }
 
     /**
@@ -182,6 +211,9 @@ public class SudokuPuzzle {
         return buf.toString();
     }
 
+    /**
+     * return true if all cells contain valid values (i.e., no value violates a SudokuRule)
+     */
     public boolean isValid() {
         for (SudokuRule rule : SudokuRule.getRules()) {
             if (!rule.isValid(this)) {
@@ -192,6 +224,9 @@ public class SudokuPuzzle {
         return true;
     }
 
+    /**
+     * return true only if all cells have values; false otherwise
+     */
     public boolean isSolved() {
         for (CellGroup row : getRows()) {
             for (Cell cell : row) {
@@ -202,18 +237,4 @@ public class SudokuPuzzle {
         }
         return true;
     }
-
-    // only called for rule analysis (so rarely); otherwise would try to optimize this for perf
-    public CellGroup[] getRows() {
-        return rows;
-    }
-
-    public CellGroup[] getColumns() {
-        return columns;
-    }
-
-    public CellGroup[][] getBlocks() {
-        return blocks;
-    }
-
 }

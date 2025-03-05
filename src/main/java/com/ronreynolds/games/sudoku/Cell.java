@@ -1,15 +1,13 @@
 package com.ronreynolds.games.sudoku;
 
-import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 /**
  * represents the value (if known) and possible values of a single cell in a sudoku puzzle
  */
-@Getter
 public class Cell {
     private final CellCoordinates coordinates;
     private final Set<Integer> possibleValues = Sudoku.newAllValuesSet();
@@ -28,16 +26,25 @@ public class Cell {
         possibleValues.clear(); // once we set the value there are no more possibles
     }
 
-    public void addPossibleValue(int value) {
-        possibleValues.add(value);
-    }
-
-    public boolean hasPossibleValue(int value) {
-        return possibleValues.contains(value);
+    public boolean hasPossibleValue(Integer possibleValue) {
+        return possibleValues.contains(possibleValue);
     }
 
     public void removePossibleValue(int value) {
         possibleValues.remove(value);
+    }
+
+    public CellCoordinates getCoordinates() {
+        return coordinates;
+    }
+
+    public Set<Integer> getPossibleValues() {
+        // in general it's a bad idea to expose references to mutable internal data
+        return Collections.unmodifiableSet(possibleValues);
+    }
+
+    public Integer getValue() {
+        return value;
     }
 
     @Override
@@ -47,5 +54,17 @@ public class Cell {
 
     public boolean hasValue() {
         return value != null;
+    }
+
+    public int getPossibleCount() {
+        return possibleValues.size();
+    }
+
+    public static int assertValidValue(int val) {
+        if (val < 1 || val > Sudoku.dimension) {
+            throw new IllegalArgumentException(
+                    String.format("value %d is outside the allowed range (1,%d)", val, Sudoku.dimension));
+        }
+        return val;
     }
 }

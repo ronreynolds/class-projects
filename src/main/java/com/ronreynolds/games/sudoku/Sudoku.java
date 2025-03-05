@@ -29,12 +29,15 @@ public class Sudoku {
         while (!sudokuPuzzle.isSolved()) {
             boolean foundValue = false;
             // apply all heuristics to the puzzle
-            for (SudokuHeuristic heuristic : SudokuHeuristic.getHeuristics()) {
-                foundValue = heuristic.findValues(sudokuPuzzle);
+            for (SudokuSolver solver : SudokuSolver.getSolvers()) {
+                foundValue = solver.apply(sudokuPuzzle);
+                if (sudokuPuzzle.isSolved()) {
+                    break;  // once we've solved it no point it applying any more solvers
+                }
             }
             // we ran all the heuristics and no cells were solved
             if (!foundValue) {
-                System.out.println("The given Sudoku puzzle is unsolvable");
+                System.out.println("The given Sudoku puzzle is unsolvable (by this app)");
                 break;
             }
         }
