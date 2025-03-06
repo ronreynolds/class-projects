@@ -10,25 +10,24 @@ public class CellGroup implements Iterable<Cell> {
     // the cells of this group (row, column, or block)
     private final Cell[] cells = new Cell[Sudoku.dimension];
     // the possible values of this group (union of possible values of all group cells)
-    private final Set<Integer> possibleValues = new HashSet<>();
+    private final Set<Integer> possibleValues = Sudoku.newAllValuesSet();
 
     /**
      * adds a cell in the next unoccupied spot (useful for blocks where order doesn't matter)
      *
      * @param cell the cell to add
-     * @return if the cell was added; if this group is already full (has 9 members) then return false indicating an error
+     * @throws IllegalStateException if this cell group is full
      */
-    public boolean addCell(Cell cell) {
-        boolean cellAdded = false;
+    public void addCell(Cell cell) {
         // find the first empty spot; as this is a rare operation performance is less important
         for (int x = 0; x < cells.length; ++x) {
             if (cells[x] == null) {
                 cells[x] = cell;
-                cellAdded = true;
-                break;
+                updatePossibleValues(cell);
+                return;
             }
         }
-        return cellAdded;
+        throw new IllegalStateException("no space for this cell was found in this group");
     }
 
     /**
@@ -36,13 +35,14 @@ public class CellGroup implements Iterable<Cell> {
      *
      * @param x    the row, column, or member index in a block
      * @param cell the cell to store
-     * @return if the cell was previously occupied (typically indicates an error)
+     * @throws IllegalStateException if this method attempts to overwrite an existing cell
      */
-    public boolean setCell(int x, Cell cell) {
-        CellCoordinates.assertValidCoordinate(x, "x");
-        boolean cellWasEmpty = cells[x] == null;
+    public void setCell(int x, Cell cell) {
+        if (cells[CellCoordinates.assertValidCoordinate(x, "x")] != null) {
+            throw new IllegalStateException("attempt to overwrite cell at " + x);
+        }
         cells[x] = cell;
-        return cellWasEmpty;
+        updatePossibleValues(cell);
     }
 
     /**
@@ -57,6 +57,12 @@ public class CellGroup implements Iterable<Cell> {
      */
     public Set<Integer> getPossibleValues() {
         return Collections.unmodifiableSet(possibleValues);
+    }
+
+    private void updatePossibleValues(Cell cell) {
+        if (cell.hasValue()) {
+            possibleValues.remove(cell.getValue());
+        }
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.ronreynolds.games.sudoku;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +10,7 @@ import java.util.Set;
 /**
  * rules for finding cell values in a sudoku puzzle
  */
+@Slf4j
 public enum SudokuSolver {
     NAKED_SINGLES { // find all cells with only 1 possible value and set their value to that
         @Override
@@ -42,6 +45,9 @@ public enum SudokuSolver {
                         puzzle.setCellValue(entry.getValue().get(0).getCoordinates(), entry.getKey());
                         foundValue = true;
                     }
+                }
+                if (!foundValue) {
+                    log.debug("unable to find hidden singles in puzzle:\n{} posToCellMap:\n{}", puzzle, possiblesToCellsMap);
                 }
             }
 

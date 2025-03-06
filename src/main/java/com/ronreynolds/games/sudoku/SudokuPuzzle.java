@@ -2,10 +2,7 @@ package com.ronreynolds.games.sudoku;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static com.ronreynolds.games.sudoku.Sudoku.blockSize;
 import static com.ronreynolds.games.sudoku.Sudoku.dimension;
@@ -46,23 +43,11 @@ public class SudokuPuzzle {
                 CellGroup rowGroup = rows[row];
                 CellGroup columnGroup = columns[col];
                 CellGroup blockGroup = blocks[blockRow][blockCol];
-
-                if (!rowGroup.setCell(col, cell)) { // this should never return false
-                    throw new IllegalStateException(String.format(
-                            "LOGIC ERROR - there's already a cell in rowGroup %d at column %d", row, col));
-                }
-
-                if (!columnGroup.setCell(row, cell)) { // this should never return false
-                    throw new IllegalStateException(String.format(
-                            "LOGIC ERROR - there's already a cell in columnGroup %d at row %d", col, row));
-                }
-
+                // add this cell to its groups
+                rowGroup.setCell(col, cell);
+                columnGroup.setCell(row, cell);
                 // the cell position in the block doesn't actually matter
-                if (!blockGroup.addCell(cell)) { // this should never return false
-                    throw new IllegalStateException(String.format(
-                            "LOGIC ERROR - failed to add cell %s to already full group at (%d, %d)", cell,
-                            blockRow, blockCol));
-                }
+                blockGroup.addCell(cell);
             }
         }
         // used by solvers that need to iterate all the groups regardless of what kind they are
@@ -121,7 +106,7 @@ public class SudokuPuzzle {
                 if (value != UNKNOWN) {
                     if (value < 1 || value > dimension) {
                         throw new IllegalArgumentException(
-                                String.format("invalid value (%c) at (%d, %d)", value, row, col));
+                                String.format("invalid value (%d) at (%d, %d)", value, row, col));
                     }
                     puzzle.setCellValue(CellCoordinates.of(row, col), value);
                 }
@@ -130,6 +115,27 @@ public class SudokuPuzzle {
         return puzzle;
     }
 
+    /** this is actually the most useful and easiest to use grid notation; 81 chars, space = unknown */
+    public static SudokuPuzzle create(String compactGrid) {
+        if (compactGrid.length() != dimension * dimension) {
+            throw new IllegalArgumentException(
+                    String.format("incorrect size (%d) for compactGrid of %d x %d puzzle",
+                            compactGrid.length(), dimension, dimension));
+        }
+        int[][] grid = new int[dimension][dimension];
+        char[] chars = compactGrid.toCharArray();
+        for (int row = 0; row < dimension; ++row) {
+            for (int col = 0; col < dimension; ++col) {
+                int offset = row * dimension + col;
+                if (chars[offset] != ' ') {
+                    grid[row][col] = chars[offset] - '0';
+                } else {
+                    grid[row][col] = 0;
+                }
+            }
+        }
+        return create(grid);
+    }
 
     public CellGroup[] getRows() {
         return rows;
@@ -201,12 +207,32 @@ public class SudokuPuzzle {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append(super.toString())
-                .append("\nrows:").append(Arrays.toString(rows))
-                .append("\ncolumns:").append(Arrays.toString(columns))
-                .append("\nblocks:");
-        for (int row = 0; row < blockSize; ++row) {
-            buf.append(Arrays.toString(blocks[row])).append('\n');
+        // if it's not solved we also want the possible values of the unsolved cells
+        Map<CellCoordinates, Set<Integer>> possibleValuesMap = new TreeMap<>();
+        for (CellGroup row : getRows()) {
+            for (Cell cell : row) {
+                Integer val = cell.getValue();
+                if (val == null) {
+                    // easier to read if the values are sorted
+                    possibleValuesMap.put(cell.getCoordinates(), new TreeSet<>(cell.getPossibleValues()));
+                    buf.append('?');    // place-holder for unknown cell
+                } else {
+                    buf.append(val);
+                }
+                buf.append(' ');
+            }
+            buf.append('\n');
+        }
+        if (!possibleValuesMap.isEmpty()) {
+            buf.append("\npossible values:\n");
+            int currentRow = 0;
+            for (var entry : possibleValuesMap.entrySet()) {    // using var to infer the type of entry
+                if (entry.getKey().row != currentRow) {
+                    buf.append('\n');
+                    currentRow = entry.getKey().row;
+                };
+                buf.append(entry).append(' ');
+            }
         }
         return buf.toString();
     }
