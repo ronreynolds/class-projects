@@ -2,7 +2,6 @@ package com.ronreynolds.games.sudoku;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,7 @@ import java.util.Set;
  */
 @Slf4j
 public enum SudokuSolver {
-    NAKED_SINGLES { // find all cells with only 1 possible value and set their value to that
+    SIMPLE_SINGLES { // find all cells with only 1 possible value and set their value to that
         @Override
         public boolean apply(SudokuPuzzle puzzle) {
             boolean foundValue = false;
@@ -31,7 +30,7 @@ public enum SudokuSolver {
             return foundValue;
         }
     },
-    HIDDEN_SINGLES {
+    HIDDEN_SINGLES {    // find all cells where only they have a certain value as possible
         @Override
         public boolean apply(SudokuPuzzle puzzle) {
             boolean foundValue = false;
@@ -53,6 +52,17 @@ public enum SudokuSolver {
 
             return foundValue;
         }
+    },
+    LOCKED_LINES {  // find cells within a block that contain certain possible values that line up (row or column)
+        @Override
+        public boolean apply(SudokuPuzzle puzzle) {
+            boolean foundValue = false;
+            // this approach only deals with blocks
+            for (CellGroup block : puzzle.getBlocks()) {
+
+            }
+            return foundValue;
+        }
     }
     // TODO - add more solvers
     ;
@@ -66,6 +76,7 @@ public enum SudokuSolver {
 
     /**
      * given a puzzle apply the rule to it to see if it can find any new cell values
+     *
      * @param puzzle the puzzle to be checked and modified with found values
      * @return if any values were found (i.e., did this rule make progress to solving the puzzle?)
      */

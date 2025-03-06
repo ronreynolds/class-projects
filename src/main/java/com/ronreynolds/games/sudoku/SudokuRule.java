@@ -1,6 +1,5 @@
 package com.ronreynolds.games.sudoku;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public enum SudokuRule {
@@ -29,11 +28,9 @@ public enum SudokuRule {
     ONE_VALUE_PER_BLOCK {
         @Override
         public boolean isValid(SudokuPuzzle puzzle) {
-            for (CellGroup[] blockGroup : puzzle.getBlocks()) {
-                for (CellGroup block : blockGroup) {
-                    if (hasDuplicateValues(block)) {
-                        return false;
-                    }
+            for (CellGroup block : puzzle.getBlocks()) {
+                if (hasDuplicateValues(block)) {
+                    return false;
                 }
             }
             return true;
@@ -49,7 +46,9 @@ public enum SudokuRule {
 
     public abstract boolean isValid(SudokuPuzzle sudokuPuzzle);
 
-    /** common method to detect if a group of cells has a single value more than once */
+    /**
+     * common method to detect if a group of cells has a single value more than once
+     */
     private static boolean hasDuplicateValues(CellGroup cells) {
         Set<Integer> values = Sudoku.newAllValuesSet();
         for (Cell cell : cells) {

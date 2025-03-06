@@ -59,9 +59,16 @@ public class CellGroup implements Iterable<Cell> {
         return Collections.unmodifiableSet(possibleValues);
     }
 
+    public void removePossibleValue(Integer value) {
+        possibleValues.remove(value);
+        for (Cell cell : cells) {
+            cell.removePossibleValue(value);
+        }
+    }
+
     private void updatePossibleValues(Cell cell) {
         if (cell.hasValue()) {
-            possibleValues.remove(cell.getValue());
+            removePossibleValue(cell.getValue());
         }
     }
 

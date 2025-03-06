@@ -7,7 +7,7 @@ import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name="games", mixinStandardHelpOptions = true, version="1.0", description = "various games")
+@CommandLine.Command(name = "games", mixinStandardHelpOptions = true, version = "1.0", description = "various games")
 public class Main implements Callable<Integer> {
     enum Game {
         sudoku(Sudoku.class),
@@ -23,7 +23,7 @@ public class Main implements Callable<Integer> {
         }
     }
 
-    @CommandLine.Parameters(index="0", description = "name of game", defaultValue = "hangman")
+    @CommandLine.Parameters(index = "0", description = "name of game", defaultValue = "hangman")
     private String gameName;
 
     public static void main(String[] args) {

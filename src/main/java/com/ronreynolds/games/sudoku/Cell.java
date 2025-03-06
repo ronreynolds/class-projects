@@ -30,7 +30,7 @@ public class Cell {
         return possibleValues.contains(possibleValue);
     }
 
-    public void removePossibleValue(int value) {
+    public void removePossibleValue(Integer value) {
         possibleValues.remove(value);
     }
 

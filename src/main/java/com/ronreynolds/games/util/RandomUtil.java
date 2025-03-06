@@ -53,7 +53,7 @@ public class RandomUtil {
             }
         }
         // if we failed to load any words then we can't run the game :(
-        if(words.isEmpty()) {
+        if (words.isEmpty()) {
             throw new IllegalStateException("failed to load a word file :(");
         }
     }

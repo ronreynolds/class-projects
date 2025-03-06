@@ -6,7 +6,9 @@ public class Dungeon {
     private static final int DEFAULT_WIDTH = 10;
     private static final int DEFAULT_HEIGHT = 10;
 
-    /** main entry-point into Dungeon game */
+    /**
+     * main entry-point into Dungeon game
+     */
     public static void main(String[] args) {
         int width = DEFAULT_WIDTH;
         int height = DEFAULT_HEIGHT;

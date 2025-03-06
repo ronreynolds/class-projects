@@ -36,13 +36,13 @@ public class Sudoku {
             // apply all heuristics to the puzzle
             for (SudokuSolver solver : SudokuSolver.getSolvers()) {
                 boolean solverFoundValue = solver.apply(sudokuPuzzle);
-                if (sudokuPuzzle.isSolved()) {
-                    break;  // once we've solved it no point it applying any more solvers
-                }
                 anySolverFoundValue |= solverFoundValue;
                 log.info("applied {} (found:{}) puzzle:\n{}", solver, solverFoundValue, sudokuPuzzle);
+                if (sudokuPuzzle.isSolved()) {
+                    break;  // once we've solved it no point applying any more solvers
+                }
             }
-            // we ran all the solvers and no cells were solved
+            // we ran all the solvers and no new cells were solved
             if (!anySolverFoundValue) {
                 System.out.println("The given Sudoku puzzle is unsolvable (by this app)");
                 break;

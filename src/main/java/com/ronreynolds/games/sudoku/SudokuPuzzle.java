@@ -3,34 +3,31 @@ package com.ronreynolds.games.sudoku;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.ronreynolds.games.sudoku.Sudoku.blockSize;
 import static com.ronreynolds.games.sudoku.Sudoku.dimension;
 
 /**
- * represents the state of the board; hard-coded for 9x9 grids for simplicity
+ * represents the state of the board
  */
 @Slf4j
 public class SudokuPuzzle {
-    private final CellGroup[] rows = new CellGroup[dimension];                  // 9 groups for the 9 rows
-    private final CellGroup[] columns = new CellGroup[dimension];               // 9 groups for the 9 columns
-    private final CellGroup[][] blocks = new CellGroup[blockSize][blockSize];   // 3x3 grid of groups
+    private final List<CellGroup> rows;
+    private final List<CellGroup> columns;
+    private final List<CellGroup> blocks;
     private final List<CellGroup> groupList;
 
     /**
      * create a grid of dimension x dimension cells and an array of blocks of sqrt(dimension) x sqrt(dimension)
      */
     public SudokuPuzzle() {
-        // populate our arrays first
-        for (int x = 0; x < dimension; ++x) {
-            rows[x] = new CellGroup();
-            columns[x] = new CellGroup();
-        }
-        for (int x = 0; x < blockSize; ++x) {
-            for (int y = 0; y < blockSize; ++y) {
-                blocks[x][y] = new CellGroup();
-            }
-        }
+        // populate our lists first
+        rows = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toList());
+        columns = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toList());
+        blocks = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toList());
 
         // populate the rows, columns, and blocks with Cells
         for (int row = 0; row < dimension; ++row) {
@@ -38,25 +35,22 @@ public class SudokuPuzzle {
                 Cell cell = new Cell(row, col);
 
                 // find the right groups for this cell
-                int blockRow = row / blockSize;
-                int blockCol = col / blockSize;
-                CellGroup rowGroup = rows[row];
-                CellGroup columnGroup = columns[col];
-                CellGroup blockGroup = blocks[blockRow][blockCol];
+                CellGroup rowGroup = rows.get(row);
+                CellGroup columnGroup = columns.get(col);
+                CellGroup blockGroup = blocks.get(toBlockIndex(row, col));
+
                 // add this cell to its groups
                 rowGroup.setCell(col, cell);
                 columnGroup.setCell(row, cell);
-                // the cell position in the block doesn't actually matter
-                blockGroup.addCell(cell);
+                blockGroup.addCell(cell); // the cell position in the block doesn't actually matter
             }
         }
         // used by solvers that need to iterate all the groups regardless of what kind they are
-        groupList = new ArrayList<>(rows.length + columns.length + blocks.length * 2);
-        Collections.addAll(groupList, rows);
-        Collections.addAll(groupList, columns);
-        for (CellGroup[] blockRow : blocks) {
-            Collections.addAll(groupList, blockRow);
-        }
+        List<CellGroup> allGroups = new ArrayList<>(3 * dimension);
+        allGroups.addAll(rows);
+        allGroups.addAll(columns);
+        allGroups.addAll(blocks);
+        groupList = Collections.unmodifiableList(allGroups);
     }
 
     public static SudokuPuzzle create(char[][] knownCells) {
@@ -115,7 +109,9 @@ public class SudokuPuzzle {
         return puzzle;
     }
 
-    /** this is actually the most useful and easiest to use grid notation; 81 chars, space = unknown */
+    /**
+     * this is actually the most useful and easiest to use grid notation; 81 chars, space = unknown
+     */
     public static SudokuPuzzle create(String compactGrid) {
         if (compactGrid.length() != dimension * dimension) {
             throw new IllegalArgumentException(
@@ -137,23 +133,23 @@ public class SudokuPuzzle {
         return create(grid);
     }
 
-    public CellGroup[] getRows() {
-        return rows;
+    public List<CellGroup> getRows() {
+        return Collections.unmodifiableList(rows);
     }
 
-    public CellGroup[] getColumns() {
-        return columns;
+    public List<CellGroup> getColumns() {
+        return Collections.unmodifiableList(columns);
     }
 
-    public CellGroup[][] getBlocks() {
-        return blocks;
+    public List<CellGroup> getBlocks() {
+        return Collections.unmodifiableList(blocks);
     }
 
     /**
      * convenience method for solvers that walk all rows, columns, and blocks
      */
     public List<CellGroup> getCellGroupList() {
-        return Collections.unmodifiableList(groupList);
+        return groupList;
     }
 
     /**
@@ -162,9 +158,9 @@ public class SudokuPuzzle {
      */
     public void setCellValue(CellCoordinates coordinates, int value) {
         getCell(coordinates).setValue(value);
-        getRowForCell(coordinates).forEach(c -> c.removePossibleValue(value));
-        getColumnForCell(coordinates).forEach(c -> c.removePossibleValue(value));
-        getBlockForCell(coordinates).forEach(c -> c.removePossibleValue(value));
+        getRowForCell(coordinates).removePossibleValue(value);
+        getColumnForCell(coordinates).removePossibleValue(value);
+        getBlockForCell(coordinates).removePossibleValue(value);
     }
 
     /**
@@ -174,9 +170,7 @@ public class SudokuPuzzle {
      * @return the requested block of Cells
      */
     public CellGroup getBlockForCell(CellCoordinates coordinates) {
-        int blockRow = coordinates.row / blockSize;
-        int blockCol = coordinates.col / blockSize;
-        return blocks[blockRow][blockCol];
+        return blocks.get(toBlockIndex(coordinates.row, coordinates.col));
     }
 
     /**
@@ -187,13 +181,16 @@ public class SudokuPuzzle {
     }
 
     public CellGroup getRowForCell(CellCoordinates coordinates) {
-        return rows[coordinates.row];
+        return rows.get(coordinates.row);
     }
 
     public CellGroup getColumnForCell(CellCoordinates coordinates) {
-        return columns[coordinates.col];
+        return columns.get(coordinates.col);
     }
 
+    /**
+     * return a list of all the cells in this puzzle
+     */
     public List<Cell> getCellList() {
         List<Cell> cellList = new ArrayList<>(dimension * dimension);
         for (CellGroup row : getRows()) {
@@ -230,7 +227,8 @@ public class SudokuPuzzle {
                 if (entry.getKey().row != currentRow) {
                     buf.append('\n');
                     currentRow = entry.getKey().row;
-                };
+                }
+                ;
                 buf.append(entry).append(' ');
             }
         }
@@ -262,5 +260,12 @@ public class SudokuPuzzle {
             }
         }
         return true;
+    }
+
+    private static int toBlockIndex(int row, int col) {
+        // we actually want the truncation of integer division here (e.g., 2/3 = 0, 5/3 = 1, 6/3 = 2)
+        int blockRow = row / blockSize;
+        int blockCol = col / blockSize;
+        return blockRow * blockSize + blockCol;
     }
 }

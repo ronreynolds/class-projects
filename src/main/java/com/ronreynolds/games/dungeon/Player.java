@@ -3,9 +3,7 @@ package com.ronreynolds.games.dungeon;
 import com.ronreynolds.games.util.Console;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Player {
@@ -111,7 +109,7 @@ public class Player {
         return health;
     }
 
-    public Map<Monster.MonsterType,AtomicInteger> getKillMap() {
+    public Map<Monster.MonsterType, AtomicInteger> getKillMap() {
         return this.killMap;
     }
 
