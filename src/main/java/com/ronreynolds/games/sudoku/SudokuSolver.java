@@ -53,17 +53,37 @@ public enum SudokuSolver {
             return foundValue;
         }
     },
+    // https://hodoku.sourceforge.net/en/tech_intersections.php (type 1)
     LOCKED_LINES {  // find cells within a block that contain certain possible values that line up (row or column)
         @Override
         public boolean apply(SudokuPuzzle puzzle) {
             boolean foundValue = false;
-            // this approach only deals with blocks
+            // this approach only deals with blocks (but cares about the row/column of the cells)
             for (CellGroup block : puzzle.getBlocks()) {
-
+                // for each possible value find the row/column of the cells;
+                // if all cells are from the same row or column we can remove that value other cells' possibles in that row/column
+            }
+            return foundValue;
+        }
+    },
+    // https://hodoku.sourceforge.net/en/tech_intersections.php (type 2)
+    LOCKED_BLOCKS {  // find cells within a row or column that contain certain possible values that are all in 1 block
+        @Override
+        public boolean apply(SudokuPuzzle puzzle) {
+            boolean foundValue = false;
+            // this approach deals with rows and columns but cares about the blocks of the cells
+            for (CellGroup row : puzzle.getRows()) {
+                // for each possible value find the blocks of the cells;
+                // if all cells are from the same block we can remove that value other cells' possibles in block
+            }
+            for (CellGroup column : puzzle.getColumns()) {
+                // for each possible value find the blocks of the cells;
+                // if all cells are from the same block we can remove that value other cells' possibles in block
             }
             return foundValue;
         }
     }
+
     // TODO - add more solvers
     ;
 
