@@ -1,11 +1,14 @@
 package com.ronreynolds.games.sudoku;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.*;
 import java.util.function.Consumer;
 
 /**
  * a collection of 9 cells; whether they're in a row, column, or block depends on how they're referenced
  */
+@Slf4j
 public class CellGroup implements Iterable<Cell> {
     // the cells of this group (row, column, or block)
     private final Cell[] cells = new Cell[Sudoku.dimension];
@@ -53,17 +56,16 @@ public class CellGroup implements Iterable<Cell> {
     }
 
     /**
-     * return the set of possible values for this group
+     * remove this value from the list of possibles for this group
+     * @param value the value to remove
+     * @return true if the value was removed (i.e., was in the possible set before and isn't now); false otherwise
      */
-    public Set<Integer> getPossibleValues() {
-        return Collections.unmodifiableSet(possibleValues);
-    }
-
-    public void removePossibleValue(Integer value) {
-        possibleValues.remove(value);
+    public boolean removePossibleValue(Integer value) {
+        boolean valueRemoved = possibleValues.remove(value);
         for (Cell cell : cells) {
-            cell.removePossibleValue(value);
+            valueRemoved |= cell.removePossibleValue(value);
         }
+        return valueRemoved;
     }
 
     private void updatePossibleValues(Cell cell) {
@@ -106,13 +108,15 @@ public class CellGroup implements Iterable<Cell> {
      * if we wanted to boost performance maintaining this map as a field would be useful but a little complicated
      */
     public Map<Integer, List<Cell>> getPossibleToCellMap() {
-        // if this group has no possible values return an empty map
-        if (possibleValues.isEmpty()) {
-            return Map.of();
-        }
         Map<Integer, List<Cell>> possibleValuesMap = new HashMap<>();
         for (Integer possibleValue : possibleValues) {
-            possibleValuesMap.put(possibleValue, getCellsWithPossibleValue(possibleValue));
+            List<Cell> cellsWithPossibleValue = getCellsWithPossibleValue(possibleValue);
+            if (!cellsWithPossibleValue.isEmpty()) {
+                possibleValuesMap.put(possibleValue, cellsWithPossibleValue);
+            } else {
+                // FIXME - this might be happening and we just don't know it (i.e., group-level possibles might not help)
+                log.warn("possibleValues out of sync with cells - {} has no cells for which it's possible", possibleValue);
+            }
         }
         return possibleValuesMap;
     }

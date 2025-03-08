@@ -160,8 +160,9 @@ class SudokuTest {
 
         SudokuPuzzle puzzle = SudokuPuzzle.create(grid);
         Sudoku.solve(puzzle);
-        assertThat(puzzle.isSolved()).isTrue();
-        System.out.println(puzzle);
+        assertThat(puzzle.isSolved()).as("puzzle was not solved").isTrue();
+        assertThat(puzzle.isValid()).as("solved puzzle is not valid").isTrue();
+        System.out.println("very-easy puzzle solved:\n" + puzzle);
     }
 
     @Test
@@ -178,8 +179,9 @@ class SudokuTest {
                 "37 48   9";
         SudokuPuzzle puzzle = SudokuPuzzle.create(grid);
         Sudoku.solve(puzzle);
-        assertThat(puzzle.isSolved()).isTrue();
-        System.out.println(puzzle);
+        assertThat(puzzle.isSolved()).as("puzzle was not solved").isTrue();
+        assertThat(puzzle.isValid()).as("solved puzzle is not valid").isTrue();
+        System.out.println("easy puzzle solved:\n" + puzzle);
     }
 
     @Test
@@ -196,8 +198,9 @@ class SudokuTest {
                 "    432  ";
         SudokuPuzzle puzzle = SudokuPuzzle.create(grid);
         Sudoku.solve(puzzle);
-        assertThat(puzzle.isSolved()).isTrue();
-        System.out.println(puzzle);
+        assertThat(puzzle.isSolved()).as("puzzle was not solved").isTrue();
+        assertThat(puzzle.isValid()).as("solved puzzle is not valid").isTrue();
+        System.out.println("medium puzzle solved:\n" + puzzle);
     }
 
     @Test
@@ -215,8 +218,9 @@ class SudokuTest {
         };
         SudokuPuzzle puzzle = SudokuPuzzle.create(grid);
         Sudoku.solve(puzzle);
-        assertThat(puzzle.isSolved()).isFalse();    // TODO - figure out next solver needed for hard puzzles
-        System.out.println(puzzle);
+        assertThat(puzzle.isSolved()).as("puzzle was not solved").isFalse();    // TODO - figure out next solver needed for hard puzzles
+        assertThat(puzzle.isValid()).as("solved puzzle is not valid").isTrue();
+        System.out.println("hard puzzle solved:\n" + puzzle);
     }
 
     private static char[][] blankCharGrid(int row, int col) {

@@ -30,8 +30,13 @@ public class Cell {
         return possibleValues.contains(possibleValue);
     }
 
-    public void removePossibleValue(Integer value) {
-        possibleValues.remove(value);
+    /**
+     * remove a possible value from this Cell's possibleValues set
+     * @param value the value to remove from the set of possibles
+     * @return if the value was removed (i.e., if it was in the set before and it's not now)
+     */
+    public boolean removePossibleValue(Integer value) {
+        return possibleValues.remove(value);
     }
 
     public CellCoordinates getCoordinates() {

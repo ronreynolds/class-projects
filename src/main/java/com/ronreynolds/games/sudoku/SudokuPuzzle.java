@@ -173,6 +173,10 @@ public class SudokuPuzzle {
         return blocks.get(toBlockIndex(coordinates.row, coordinates.col));
     }
 
+    public CellGroup getBlockForCell(Cell cell) {
+        return blocks.get(toBlockIndex(cell.getCoordinates().row, cell.getCoordinates().col));
+    }
+
     /**
      * if we use CellCoordinates instead of row/column ints we don't have to worry about validating the values
      */
@@ -184,8 +188,16 @@ public class SudokuPuzzle {
         return rows.get(coordinates.row);
     }
 
+    public CellGroup getRowForCell(Cell cell) {
+        return getRowForCell(cell.getCoordinates());
+    }
+
     public CellGroup getColumnForCell(CellCoordinates coordinates) {
         return columns.get(coordinates.col);
+    }
+
+    public CellGroup getColumnForCell(Cell cell) {
+        return getColumnForCell(cell.getCoordinates());
     }
 
     /**

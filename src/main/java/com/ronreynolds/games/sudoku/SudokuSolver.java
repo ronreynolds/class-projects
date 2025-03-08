@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -38,7 +39,7 @@ public enum SudokuSolver {
             for (CellGroup group : puzzle.getCellGroupList()) {
                 // only need to check possible values in group
                 Map<Integer, List<Cell>> possiblesToCellsMap = group.getPossibleToCellMap();
-                for (Map.Entry<Integer, List<Cell>> entry : possiblesToCellsMap.entrySet()) {
+                for (var entry : possiblesToCellsMap.entrySet()) {
                     // if there is only 1 cell with this possible value that's a hidden single
                     if (entry.getValue().size() == 1) {
                         puzzle.setCellValue(entry.getValue().get(0).getCoordinates(), entry.getKey());
@@ -54,14 +55,45 @@ public enum SudokuSolver {
         }
     },
     // https://hodoku.sourceforge.net/en/tech_intersections.php (type 1)
-    LOCKED_LINES {  // find cells within a block that contain certain possible values that line up (row or column)
+    LOCKED_LINES {  // find cells within a block that contain certain possible values that line up (same row or column)
         @Override
         public boolean apply(SudokuPuzzle puzzle) {
             boolean foundValue = false;
             // this approach only deals with blocks (but cares about the row/column of the cells)
             for (CellGroup block : puzzle.getBlocks()) {
-                // for each possible value find the row/column of the cells;
-                // if all cells are from the same row or column we can remove that value other cells' possibles in that row/column
+                Map<Integer, List<Cell>> possibleValueMap = block.getPossibleToCellMap();
+                for (var entry : possibleValueMap.entrySet()) {
+                    // for each possible value find the row/column of the cells;
+                    // if all cells are from the same row or column we can remove that value other cells' possibles in that row/column
+                    List<Cell> cellsWithSamePossible = entry.getValue();
+                    Optional<Integer> commonRow = findCommonRow(cellsWithSamePossible);
+                    if (commonRow.isPresent()) {
+                        // all cells in this block with this possible value have the same row; we can clear it from other cells in this row
+                        log.info("{} has common-row {}", entry.getKey(), commonRow.get());
+                        CellGroup row = puzzle.getRowForCell(cellsWithSamePossible.get(0));
+                        for (Cell cell : row) {
+                            // be sure to not clear the possible from this group's cells
+                            if (!cellsWithSamePossible.contains(cell)) {
+                                foundValue |= cell.removePossibleValue(entry.getKey());
+                            }
+                        }
+                    } else {
+                        // possibly they have a column in common
+                        Optional<Integer> commonCol = findCommonColumn(cellsWithSamePossible);
+                        if (commonCol.isPresent()) {
+                            // all cells in this block with this possible value have the same column; we can clear it from other cells in this column
+                            log.info("{} has common-column {}", entry.getKey(), commonCol.get());
+                            CellGroup column = puzzle.getColumnForCell(cellsWithSamePossible.get(0));
+                            for (Cell cell : column) {
+                                // be sure to not clear the possible from this group's cells
+                                if (!cellsWithSamePossible.contains(cell)) {
+                                    foundValue |= cell.removePossibleValue(entry.getKey());
+                                }
+                            }
+                        }
+                    }
+
+                }
             }
             return foundValue;
         }
@@ -70,17 +102,40 @@ public enum SudokuSolver {
     LOCKED_BLOCKS {  // find cells within a row or column that contain certain possible values that are all in 1 block
         @Override
         public boolean apply(SudokuPuzzle puzzle) {
+            return applyToGroup(puzzle, puzzle.getRows(), "row")
+                    || applyToGroup(puzzle, puzzle.getColumns(), "column");
+        }
+
+        // because we process rows and columns the same we can use a shared method for both
+        private boolean applyToGroup(SudokuPuzzle puzzle, List<CellGroup> groupList, String groupType) {
             boolean foundValue = false;
-            // this approach deals with rows and columns but cares about the blocks of the cells
-            for (CellGroup row : puzzle.getRows()) {
-                // for each possible value find the blocks of the cells;
-                // if all cells are from the same block we can remove that value other cells' possibles in block
-            }
-            for (CellGroup column : puzzle.getColumns()) {
-                // for each possible value find the blocks of the cells;
-                // if all cells are from the same block we can remove that value other cells' possibles in block
+            for (CellGroup row : groupList) {
+                Map<Integer, List<Cell>> possibleValueMap = row.getPossibleToCellMap();
+                for (var entry : possibleValueMap.entrySet()) {
+                    // for each possible value find the blocks of the cells;
+                    Integer possibleValue = entry.getKey();
+                    List<Cell> cells = entry.getValue();
+                    // if all cells are from the same block we can remove that value from other cells' possibles in block
+                    Optional<CellGroup> commonBlock = findCommonBlock(puzzle, cells);
+                    if (commonBlock.isPresent()) {
+                        log.info("possible {} in {} of {} is common to a block",
+                                possibleValue, groupType, cells.get(0).getCoordinates());
+                        // remove this possible value from all OTHER cells in this block
+                        for (Cell cell : commonBlock.get()) {
+                            if (!cells.contains(cell)) {
+                                foundValue |= cell.removePossibleValue(possibleValue);
+                            }
+                        }
+                    }
+                }
             }
             return foundValue;
+        }
+    },
+    HIDDEN_PAIR {
+        @Override
+        public boolean apply(SudokuPuzzle puzzle) {
+            return false;
         }
     }
 
@@ -101,4 +156,67 @@ public enum SudokuSolver {
      * @return if any values were found (i.e., did this rule make progress to solving the puzzle?)
      */
     public abstract boolean apply(SudokuPuzzle puzzle);
+
+    // static util methods for solvers
+    /**
+     * if this group of cells has a common row return it; otherwise empty
+     *
+     * @param cells the list of cells from which to check their coordinates
+     * @return the common row value or empty if they have different row values
+     */
+    private static Optional<Integer> findCommonRow(List<Cell> cells) {
+        if (cells.isEmpty()) {
+            return Optional.empty();
+        }
+        int candidateRow = cells.get(0).getCoordinates().row;
+        for (Cell cell : cells) {
+            if (cell.getCoordinates().row != candidateRow) {
+                return Optional.empty();    // a different row was found
+            }
+        }
+        // all cells had this row in their coordinates
+        return Optional.of(candidateRow);
+    }
+
+    /**
+     * if this group of cells has a common column return it; otherwise empty
+     *
+     * @param cells the list of cells from which to check their coordinates
+     * @return the common column value or empty if they have different column values
+     */
+    private static Optional<Integer> findCommonColumn(List<Cell> cells) {
+        if (cells.isEmpty()) {
+            return Optional.empty();
+        }
+        int candidateCol = cells.get(0).getCoordinates().col;
+        for (Cell cell : cells) {
+            if (cell.getCoordinates().col != candidateCol) {
+                return Optional.empty();    // a different column was found
+            }
+        }
+        // all cells had this column in their coordinates
+        return Optional.of(candidateCol);
+    }
+
+    /**
+     * if this group of cells has a common block return it; otherwise empty
+     *
+     * @param cells the list of cells from which to check their block
+     * @return the common block or empty if they are in different blocks
+     */
+    private static Optional<CellGroup> findCommonBlock(SudokuPuzzle puzzle, List<Cell> cells) {
+        if (cells.isEmpty()) {
+            return Optional.empty();
+        }
+
+        CellGroup candidateBlock = puzzle.getBlockForCell(cells.get(0));
+        for (Cell cell : cells) {
+            if (puzzle.getBlockForCell(cell) != candidateBlock) {
+                return Optional.empty();    // this cell is from a different block
+            }
+            ;
+        }
+        // all cells had this block in common
+        return Optional.of(candidateBlock);
+    }
 }
