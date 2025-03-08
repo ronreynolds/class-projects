@@ -4,6 +4,7 @@ import com.ronreynolds.games.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * rules for finding cell values in a sudoku puzzle
@@ -135,7 +136,7 @@ public enum SudokuSolver {
         @Override
         public boolean apply(SudokuPuzzle puzzle) {
             boolean changedPuzzle = false;
-            // find 2 cells that are the ONLY cells in a group (row, column, or block) to contain 2 possible values (<=72 combinations)
+            // find 2 cells that are the ONLY cells in a group (row, column, or block) to contain possible values pair
             // if 2 such cells exist remove all other possibles from those 2 cells
             for (CellGroup group : puzzle.getAllGroups()) {
                 Map<Integer, List<Cell>> possibleValueMap = group.getPossibleToCellMap();
@@ -147,7 +148,8 @@ public enum SudokuSolver {
                     if (cellsWithPossiblePair.size() == 2) {
                         // we found a hidden pair! :)  remove all other possibles from these cells
                         cellsWithPossiblePair.forEach(cell -> cell.setPossibleValues(Set.of(pair.v1, pair.v2)));
-                        log.info("hidden-pair ({}) found at {}", pair, cellsWithPossiblePair);
+                        log.info("hidden-pair ({}) found at {}", pair,
+                                cellsWithPossiblePair.stream().map(Cell::getCoordinates).collect(Collectors.toList()));
                         changedPuzzle = true;
                     }
                 }

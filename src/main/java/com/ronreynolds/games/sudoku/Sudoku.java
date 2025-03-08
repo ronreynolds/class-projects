@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Slf4j
 public class Sudoku {
-    public static final int dimension = 9;
+    public static final int dimension = 9;  // kept as constant in case we someday want to do 16x16 Sudoku. :)
     public static final int blockSize = (int) Math.sqrt(dimension);
 
     public static void main(String[] args) {
@@ -32,18 +32,18 @@ public class Sudoku {
         log.info("starting solve of puzzle:\n{}", sudokuPuzzle);
 
         while (!sudokuPuzzle.isSolved()) {
-            boolean anySolverFoundValue = false;
-            // apply all heuristics to the puzzle
+            boolean anySolverHelped = false;
+            // apply all solvers to the puzzle
             for (SudokuSolver solver : SudokuSolver.getSolvers()) {
-                boolean solverFoundValue = solver.apply(sudokuPuzzle);
-                anySolverFoundValue |= solverFoundValue;
-                log.info("applied {} (found:{}) puzzle:\n{}", solver, solverFoundValue, sudokuPuzzle);
+                boolean solverHelped = solver.apply(sudokuPuzzle);
+                anySolverHelped |= solverHelped;
+                log.info("applied {} helped:{} puzzle:\n{}", solver, solverHelped, sudokuPuzzle);
                 if (sudokuPuzzle.isSolved()) {
                     break;  // once we've solved it no point applying any more solvers
                 }
             }
-            // we ran all the solvers and no new cells were solved
-            if (!anySolverFoundValue) {
+            // we ran all the solvers and none of them helped :(
+            if (!anySolverHelped) {
                 System.out.println("The given Sudoku puzzle is unsolvable (by this app)");
                 break;
             }

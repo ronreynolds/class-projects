@@ -68,7 +68,7 @@ public class SudokuPuzzle {
             for (int col = 0; col < dimension; ++col) {
                 char value = rowOfCells[col];
                 if (value != UNKNOWN) {
-                    if (value < '1' || value > '9') {
+                    if (value < '1' || value > '9') { // only (other) place where 9 is hard-coded
                         throw new IllegalArgumentException(
                                 String.format("invalid value (%c) at (%d, %d)", value, row, col));
                     }
@@ -215,7 +215,6 @@ public class SudokuPuzzle {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        // if it's not solved we also want the possible values of the unsolved cells
         Map<CellCoordinates, Set<Integer>> possibleValuesMap = new TreeMap<>();
         for (CellGroup row : getRows()) {
             for (Cell cell : row) {
@@ -231,6 +230,7 @@ public class SudokuPuzzle {
             }
             buf.append('\n');
         }
+        // if it's not solved we also want the possible values of the unsolved cells
         if (!possibleValuesMap.isEmpty()) {
             buf.append("\npossible values:\n");
             int currentRow = 0;
@@ -238,8 +238,10 @@ public class SudokuPuzzle {
                 if (entry.getKey().row != currentRow) {
                     buf.append('\n');
                     currentRow = entry.getKey().row;
+                    if (currentRow % blockSize == 0) {
+                        buf.append('\n');   // add a gap between groups; makes the output more readable
+                    }
                 }
-                ;
                 buf.append(entry).append(' ');
             }
         }

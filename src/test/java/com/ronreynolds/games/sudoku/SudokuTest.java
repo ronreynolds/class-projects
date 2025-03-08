@@ -205,22 +205,43 @@ class SudokuTest {
 
     @Test
     void canSolve_hard() {
-        int[][] grid = {
-                {1, 0, 0, 5, 0, 0, 0, 8, 0},
-                {7, 0, 0, 0, 0, 6, 2, 0, 0},
-                {0, 9, 0, 0, 7, 0, 0, 0, 1},
-                {0, 0, 0, 0, 0, 2, 0, 3, 0},
-                {0, 0, 1, 0, 3, 0, 5, 0, 0},
-                {0, 6, 0, 4, 0, 0, 0, 0, 0},
-                {9, 0, 0, 0, 4, 0, 0, 7, 0},
-                {0, 0, 6, 7, 0, 0, 0, 0, 9},
-                {0, 4, 0, 0, 0, 3, 0, 0, 2},
+        String[] grids = {"" +
+                "1  5   8 " +
+                "7    62  " +
+                " 9  7   1" +
+                "     2 3 " +
+                "  1 3 5  " +
+                " 6 4     " +
+                "9   4  7 " +
+                "  67    9" +
+                " 4   3  2", ""+ // these little empty strings keep the code formatter from being stupid
+                "    32   " +
+                "         " +
+                "  76  914" +
+                " 96   8  " +
+                "  5  8   " +
+                " 3  4   5" +
+                " 5 2     " +
+                "7     56 " +
+                "9 4 1    ", "" +
+                "         " +
+                "    4273 " +
+                "  67   4 " +
+                " 94      " +
+                "    96   " +
+                "  7    23" +
+                "1      85" +
+                " 6  8 27 " +
+                "  5 1    "
         };
-        SudokuPuzzle puzzle = SudokuPuzzle.create(grid);
-        Sudoku.solve(puzzle);
-        assertThat(puzzle.isSolved()).as("puzzle was not solved").isTrue();
-        assertThat(puzzle.isValid()).as("solved puzzle is not valid").isTrue();
-        System.out.println("hard puzzle solved:\n" + puzzle);
+
+        for (String grid : grids) {
+            SudokuPuzzle puzzle = SudokuPuzzle.create(grid);
+            Sudoku.solve(puzzle);
+            assertThat(puzzle.isValid()).as("puzzle is not valid").isTrue();
+            assertThat(puzzle.isSolved()).as("puzzle was not solved").isTrue();
+            System.out.println("hard puzzle solved:\n" + puzzle);
+        }
     }
 
     private static char[][] blankCharGrid(int row, int col) {
