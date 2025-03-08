@@ -218,7 +218,7 @@ class SudokuTest {
         };
         SudokuPuzzle puzzle = SudokuPuzzle.create(grid);
         Sudoku.solve(puzzle);
-        assertThat(puzzle.isSolved()).as("puzzle was not solved").isFalse();    // TODO - figure out next solver needed for hard puzzles
+        assertThat(puzzle.isSolved()).as("puzzle was not solved").isTrue();
         assertThat(puzzle.isValid()).as("solved puzzle is not valid").isTrue();
         System.out.println("hard puzzle solved:\n" + puzzle);
     }

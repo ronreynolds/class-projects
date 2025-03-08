@@ -2,13 +2,14 @@ package com.ronreynolds.games.sudoku;
 
 import lombok.NonNull;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
 /**
  * represents the value (if known) and possible values of a single cell in a sudoku puzzle
  */
-public class Cell {
+public class Cell implements Comparable<Cell> {
     private final CellCoordinates coordinates;
     private final Set<Integer> possibleValues = Sudoku.newAllValuesSet();
     private Integer value;
@@ -22,8 +23,13 @@ public class Cell {
     }
 
     public void setValue(int value) {
-        this.value = value;
+        this.value = assertValidValue(value);
         possibleValues.clear(); // once we set the value there are no more possibles
+    }
+
+    public void setPossibleValues(Set<Integer> values) {
+        possibleValues.clear();
+        possibleValues.addAll(values);
     }
 
     public boolean hasPossibleValue(Integer possibleValue) {
@@ -54,7 +60,7 @@ public class Cell {
 
     @Override
     public String toString() {
-        return super.toString() + "coord:" + coordinates + " value:" + value + " possibles:" + possibleValues;
+        return coordinates + " value:" + value + " possibles:" + possibleValues;
     }
 
     public boolean hasValue() {
@@ -63,6 +69,12 @@ public class Cell {
 
     public int getPossibleCount() {
         return possibleValues.size();
+    }
+
+    @Override
+    public int compareTo(Cell o) {
+        // cells are completely compared by coordinates
+        return this.coordinates.compareTo(o.coordinates);
     }
 
     public static int assertValidValue(int val) {

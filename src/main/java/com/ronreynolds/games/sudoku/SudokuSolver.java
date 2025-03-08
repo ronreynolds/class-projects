@@ -1,11 +1,9 @@
 package com.ronreynolds.games.sudoku;
 
+import com.ronreynolds.games.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * rules for finding cell values in a sudoku puzzle
@@ -36,7 +34,7 @@ public enum SudokuSolver {
         public boolean apply(SudokuPuzzle puzzle) {
             boolean foundValue = false;
             // iterate all cell groups in puzzle (rows, columns, and blocks)
-            for (CellGroup group : puzzle.getCellGroupList()) {
+            for (CellGroup group : puzzle.getAllGroups()) {
                 // only need to check possible values in group
                 Map<Integer, List<Cell>> possiblesToCellsMap = group.getPossibleToCellMap();
                 for (var entry : possiblesToCellsMap.entrySet()) {
@@ -58,7 +56,7 @@ public enum SudokuSolver {
     LOCKED_LINES {  // find cells within a block that contain certain possible values that line up (same row or column)
         @Override
         public boolean apply(SudokuPuzzle puzzle) {
-            boolean foundValue = false;
+            boolean changedPuzzle = false;
             // this approach only deals with blocks (but cares about the row/column of the cells)
             for (CellGroup block : puzzle.getBlocks()) {
                 Map<Integer, List<Cell>> possibleValueMap = block.getPossibleToCellMap();
@@ -74,7 +72,7 @@ public enum SudokuSolver {
                         for (Cell cell : row) {
                             // be sure to not clear the possible from this group's cells
                             if (!cellsWithSamePossible.contains(cell)) {
-                                foundValue |= cell.removePossibleValue(entry.getKey());
+                                changedPuzzle |= cell.removePossibleValue(entry.getKey());
                             }
                         }
                     } else {
@@ -87,7 +85,7 @@ public enum SudokuSolver {
                             for (Cell cell : column) {
                                 // be sure to not clear the possible from this group's cells
                                 if (!cellsWithSamePossible.contains(cell)) {
-                                    foundValue |= cell.removePossibleValue(entry.getKey());
+                                    changedPuzzle |= cell.removePossibleValue(entry.getKey());
                                 }
                             }
                         }
@@ -95,7 +93,7 @@ public enum SudokuSolver {
 
                 }
             }
-            return foundValue;
+            return changedPuzzle;
         }
     },
     // https://hodoku.sourceforge.net/en/tech_intersections.php (type 2)
@@ -108,7 +106,7 @@ public enum SudokuSolver {
 
         // because we process rows and columns the same we can use a shared method for both
         private boolean applyToGroup(SudokuPuzzle puzzle, List<CellGroup> groupList, String groupType) {
-            boolean foundValue = false;
+            boolean changedPuzzle = false;
             for (CellGroup row : groupList) {
                 Map<Integer, List<Cell>> possibleValueMap = row.getPossibleToCellMap();
                 for (var entry : possibleValueMap.entrySet()) {
@@ -123,19 +121,38 @@ public enum SudokuSolver {
                         // remove this possible value from all OTHER cells in this block
                         for (Cell cell : commonBlock.get()) {
                             if (!cells.contains(cell)) {
-                                foundValue |= cell.removePossibleValue(possibleValue);
+                                changedPuzzle |= cell.removePossibleValue(possibleValue);
                             }
                         }
                     }
                 }
             }
-            return foundValue;
+            return changedPuzzle;
         }
     },
+    // https://hodoku.sourceforge.net/en/tech_hidden.php
     HIDDEN_PAIR {
         @Override
         public boolean apply(SudokuPuzzle puzzle) {
-            return false;
+            boolean changedPuzzle = false;
+            // find 2 cells that are the ONLY cells in a group (row, column, or block) to contain 2 possible values (<=72 combinations)
+            // if 2 such cells exist remove all other possibles from those 2 cells
+            for (CellGroup group : puzzle.getAllGroups()) {
+                Map<Integer, List<Cell>> possibleValueMap = group.getPossibleToCellMap();
+                List<Pair<Integer>> pairList = generateCombinations(possibleValueMap.keySet());
+                for (Pair<Integer> pair : pairList) {
+                    // we use a set to remove duplicates so each cell is counted only once
+                    Set<Cell> cellsWithPossiblePair = new HashSet<>(possibleValueMap.get(pair.v1));
+                    cellsWithPossiblePair.addAll(possibleValueMap.get(pair.v2));
+                    if (cellsWithPossiblePair.size() == 2) {
+                        // we found a hidden pair! :)  remove all other possibles from these cells
+                        cellsWithPossiblePair.forEach(cell -> cell.setPossibleValues(Set.of(pair.v1, pair.v2)));
+                        log.info("hidden-pair ({}) found at {}", pair, cellsWithPossiblePair);
+                        changedPuzzle = true;
+                    }
+                }
+            }
+            return changedPuzzle;
         }
     }
 
@@ -214,9 +231,27 @@ public enum SudokuSolver {
             if (puzzle.getBlockForCell(cell) != candidateBlock) {
                 return Optional.empty();    // this cell is from a different block
             }
-            ;
         }
         // all cells had this block in common
         return Optional.of(candidateBlock);
+    }
+
+    // visible for testing
+    static <T> List<Pair<T>> generateCombinations(Collection<T> collection) {
+        if (collection.isEmpty()) {
+            return List.of();
+        }
+        int size = collection.size();
+        if (size == 1) {
+            return List.of();   // you can't have combinations with only 1 value
+        }
+        List<Pair<T>> list = new ArrayList<>(size * (size - 1));    // the number of combinations of N items is N*(N-1)
+        List<T> values = new ArrayList<>(collection);    // simplest algorithm is to use a List (in which we can jump around)
+        for (int x = 0; x < size - 1; ++x) {
+            for (int y = x + 1; y < size; ++y) {
+                list.add(Pair.of(values.get(x), values.get(y)));
+            }
+        }
+        return list;
     }
 }

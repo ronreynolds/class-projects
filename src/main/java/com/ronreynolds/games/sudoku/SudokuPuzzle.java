@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static com.ronreynolds.games.sudoku.Sudoku.blockSize;
 import static com.ronreynolds.games.sudoku.Sudoku.dimension;
@@ -18,16 +17,16 @@ public class SudokuPuzzle {
     private final List<CellGroup> rows;
     private final List<CellGroup> columns;
     private final List<CellGroup> blocks;
-    private final List<CellGroup> groupList;
+    private final List<CellGroup> allGroups;
 
     /**
      * create a grid of dimension x dimension cells and an array of blocks of sqrt(dimension) x sqrt(dimension)
      */
     public SudokuPuzzle() {
-        // populate our lists first
-        rows = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toList());
-        columns = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toList());
-        blocks = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toList());
+        // populate our lists first (these are unmodifiable because we don't add/remove Cells; we just modify the Cells)
+        rows = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toUnmodifiableList());
+        columns = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toUnmodifiableList());
+        blocks = Stream.generate(CellGroup::new).limit(dimension).collect(Collectors.toUnmodifiableList());
 
         // populate the rows, columns, and blocks with Cells
         for (int row = 0; row < dimension; ++row) {
@@ -50,7 +49,7 @@ public class SudokuPuzzle {
         allGroups.addAll(rows);
         allGroups.addAll(columns);
         allGroups.addAll(blocks);
-        groupList = Collections.unmodifiableList(allGroups);
+        this.allGroups = Collections.unmodifiableList(allGroups);
     }
 
     public static SudokuPuzzle create(char[][] knownCells) {
@@ -134,22 +133,22 @@ public class SudokuPuzzle {
     }
 
     public List<CellGroup> getRows() {
-        return Collections.unmodifiableList(rows);
+        return rows;
     }
 
     public List<CellGroup> getColumns() {
-        return Collections.unmodifiableList(columns);
+        return columns;
     }
 
     public List<CellGroup> getBlocks() {
-        return Collections.unmodifiableList(blocks);
+        return blocks;
     }
 
     /**
      * convenience method for solvers that walk all rows, columns, and blocks
      */
-    public List<CellGroup> getCellGroupList() {
-        return groupList;
+    public List<CellGroup> getAllGroups() {
+        return allGroups;
     }
 
     /**
