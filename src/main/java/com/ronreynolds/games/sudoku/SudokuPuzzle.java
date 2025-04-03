@@ -234,6 +234,20 @@ public class SudokuPuzzle {
         if (!possibleValuesMap.isEmpty()) {
             buf.append("\npossible values:\n");
             int currentRow = 0;
+            for (int row = 0; row < dimension; ++row) {
+                for (int col = 0; col < dimension; ++col) {
+                    Set<Integer> possibleValues = possibleValuesMap.get(CellCoordinates.of(row, col));
+                    buf.append('[');
+                    if (possibleValues != null) {
+                        buf.append(String.format("%9s", possibleValues.stream().map(String::valueOf).collect(Collectors.joining())));
+                    } else {
+                        buf.append("         ");    // so things line up
+                    }
+                    buf.append("] ");
+                }
+                buf.append('\n');
+            }
+/*
             for (var entry : possibleValuesMap.entrySet()) {    // using var to infer the type of entry
                 if (entry.getKey().row != currentRow) {
                     buf.append('\n');
@@ -242,8 +256,10 @@ public class SudokuPuzzle {
                         buf.append('\n');   // add a gap between groups; makes the output more readable
                     }
                 }
-                buf.append(entry).append(' ');
+                // pack in possible values with no space between
+                buf.append(entry.getValue()));
             }
+*/
         }
         return buf.toString();
     }

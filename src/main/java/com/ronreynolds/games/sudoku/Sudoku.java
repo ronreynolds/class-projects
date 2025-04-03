@@ -1,9 +1,13 @@
 package com.ronreynolds.games.sudoku;
 
+import com.ronreynolds.games.util.TriConsumer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 @Slf4j
 public class Sudoku {
@@ -28,7 +32,16 @@ public class Sudoku {
         return sudokuPuzzle.isSolved();
     }
 
+    // no pauses between solvers
+    private static final TriConsumer<SudokuSolver,Boolean,SudokuPuzzle> LOG_RESULT = (solver,helped,puzzle) -> {
+        log.info("applied {} helped:{} puzzle:\n{}", solver, helped, puzzle);
+    };
+
     public static void solve(SudokuPuzzle sudokuPuzzle) {
+        solve(sudokuPuzzle, LOG_RESULT);
+    }
+
+    public static void solve(SudokuPuzzle sudokuPuzzle, TriConsumer<SudokuSolver,Boolean,SudokuPuzzle> afterSolver) {
         log.info("starting solve of puzzle:\n{}", sudokuPuzzle);
 
         while (!sudokuPuzzle.isSolved()) {
@@ -36,8 +49,8 @@ public class Sudoku {
             // apply all solvers to the puzzle
             for (SudokuSolver solver : SudokuSolver.getSolvers()) {
                 boolean solverHelped = solver.apply(sudokuPuzzle);
+                afterSolver.accept(solver, solverHelped, sudokuPuzzle);
                 anySolverHelped |= solverHelped;
-                log.info("applied {} helped:{} puzzle:\n{}", solver, solverHelped, sudokuPuzzle);
                 if (sudokuPuzzle.isSolved()) {
                     break;  // once we've solved it no point applying any more solvers
                 }
