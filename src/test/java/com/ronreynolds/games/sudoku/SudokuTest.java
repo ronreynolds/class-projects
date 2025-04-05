@@ -4,7 +4,6 @@ import com.ronreynolds.games.util.Console;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -216,26 +215,25 @@ class SudokuTest {
                 " 6 4     " +
                 "9   4  7 " +
                 "  67    9" +
-                " 4   3  2",
-//                "" + // these little empty strings keep the code formatter from being stupid
-//                "    32   " +
-//                "         " +
-//                "  76  914" +
-//                " 96   8  " +
-//                "  5  8   " +
-//                " 3  4   5" +
-//                " 5 2     " +
-//                "7     56 " +
-//                "9 4 1    ", "" +
-//                "         " +
-//                "    4273 " +
-//                "  67   4 " +
-//                " 94      " +
-//                "    96   " +
-//                "  7    23" +
-//                "1      85" +
-//                " 6  8 27 " +
-//                "  5 1    "
+                " 4   3  2", "" + // these little empty strings keep the code formatter from being stupid
+                "    32   " +
+                "         " +
+                "  76  914" +
+                " 96   8  " +
+                "  5  8   " +
+                " 3  4   5" +
+                " 5 2     " +
+                "7     56 " +
+                "9 4 1    ", "" +
+                "         " +
+                "    4273 " +
+                "  67   4 " +
+                " 94      " +
+                "    96   " +
+                "  7    23" +
+                "1      85" +
+                " 6  8 27 " +
+                "  5 1    "
         };
 
         for (String grid : grids) {
