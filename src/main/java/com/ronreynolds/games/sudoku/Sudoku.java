@@ -3,11 +3,10 @@ package com.ronreynolds.games.sudoku;
 import com.ronreynolds.games.util.TriConsumer;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 @Slf4j
 public class Sudoku {
@@ -15,6 +14,16 @@ public class Sudoku {
     public static final int blockSize = (int) Math.sqrt(dimension);
 
     public static void main(String[] args) {
+        for (String file : args) {
+            try {
+                String compactGrid = Files.readString(Path.of(file));
+                SudokuPuzzle puzzle = SudokuPuzzle.create(compactGrid);
+                solve(puzzle);
+                log.info("finished {}", file);
+            } catch (Exception fail) {
+                log.error("failed to process {}", file, fail);
+            }
+        }
     }
 
     public static boolean check(char[][] puzzle) {
@@ -33,7 +42,7 @@ public class Sudoku {
     }
 
     // no pauses between solvers
-    private static final TriConsumer<SudokuSolver,Boolean,SudokuPuzzle> LOG_RESULT = (solver,helped,puzzle) -> {
+    private static final TriConsumer<SudokuSolver, Boolean, SudokuPuzzle> LOG_RESULT = (solver, helped, puzzle) -> {
         log.info("applied {} helped:{} puzzle:\n{}", solver, helped, puzzle);
     };
 
@@ -41,7 +50,7 @@ public class Sudoku {
         solve(sudokuPuzzle, LOG_RESULT);
     }
 
-    public static void solve(SudokuPuzzle sudokuPuzzle, TriConsumer<SudokuSolver,Boolean,SudokuPuzzle> afterSolver) {
+    public static void solve(SudokuPuzzle sudokuPuzzle, TriConsumer<SudokuSolver, Boolean, SudokuPuzzle> afterSolver) {
         log.info("starting solve of puzzle:\n{}", sudokuPuzzle);
 
         while (!sudokuPuzzle.isSolved()) {
