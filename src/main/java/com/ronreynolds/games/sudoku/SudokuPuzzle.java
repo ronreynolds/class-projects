@@ -112,6 +112,8 @@ public class SudokuPuzzle {
      * this is actually the most useful and easiest to use grid notation; 81 chars, space = unknown
      */
     public static SudokuPuzzle create(String compactGrid) {
+        // strip all CRLFs (if any)
+        compactGrid = compactGrid.replace("\n", "");
         if (compactGrid.length() != dimension * dimension) {
             throw new IllegalArgumentException(
                     String.format("incorrect size (%d) for compactGrid of %d x %d puzzle",
