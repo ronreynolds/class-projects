@@ -43,7 +43,11 @@ public class Sudoku {
 
     // no pauses between solvers
     private static final TriConsumer<SudokuSolver, Boolean, SudokuPuzzle> LOG_RESULT = (solver, helped, puzzle) -> {
-        log.info("applied {} helped:{} puzzle:\n{}", solver, helped, puzzle);
+        if (helped) {
+            log.info("{} helped; puzzle:\n{}", solver, puzzle);
+        } else {
+            log.info("{} didn't help", solver);
+        }
     };
 
     public static void solve(SudokuPuzzle sudokuPuzzle) {
