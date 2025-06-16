@@ -9,7 +9,6 @@ val mainClass = "com.ronreynolds.games.Main"
 
 // library versions
 val assertJVersion      = "3.24.2"
-val guavaVersion        = "33.2.1-jre"
 val jUnitJupiterVersion	= "5.10.2"  // from build/generated/api/build.gradle
 val lombokVersion       = "1.18.32"
 val picoCliVersion 		= "4.7.6"
