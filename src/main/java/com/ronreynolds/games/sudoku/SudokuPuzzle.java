@@ -124,10 +124,15 @@ public class SudokuPuzzle {
         for (int row = 0; row < dimension; ++row) {
             for (int col = 0; col < dimension; ++col) {
                 int offset = row * dimension + col;
-                if (chars[offset] != ' ') {
-                    grid[row][col] = chars[offset] - '0';
-                } else {
-                    grid[row][col] = 0;
+                switch(chars[offset]) {
+                    // blank indicated by space or .
+                    case ' ':
+                    case '.':
+                        grid[row][col] = 0;
+                        break;
+                    default:
+                        grid[row][col] = chars[offset] - '0';
+                        break;
                 }
             }
         }
@@ -249,19 +254,6 @@ public class SudokuPuzzle {
                 }
                 buf.append('\n');
             }
-/*
-            for (var entry : possibleValuesMap.entrySet()) {    // using var to infer the type of entry
-                if (entry.getKey().row != currentRow) {
-                    buf.append('\n');
-                    currentRow = entry.getKey().row;
-                    if (currentRow % blockSize == 0) {
-                        buf.append('\n');   // add a gap between groups; makes the output more readable
-                    }
-                }
-                // pack in possible values with no space between
-                buf.append(entry.getValue()));
-            }
-*/
         }
         return buf.toString();
     }
